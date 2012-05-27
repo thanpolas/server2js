@@ -42,6 +42,7 @@ $cmdCompile = "  --compiler_flags=\"--compilation_level=ADVANCED_OPTIMIZATIONS\"
 # Define all extern files here
 $cmdCompile .= "  --compiler_flags=\"--externs=$externsPath/jquery-1.7.js\"";
 $cmdCompile .= "  --compiler_flags=\"--externs=$externsPath/json.js\"";
+$cmdCompile .= "  --compiler_flags=\"--externs=$externsPath/server2js.js\"";
 
 $cmdCompile .= " --compiler_flags=\"--warning_level=verbose\"";
 $cmdCompile .= " --compiler_flags=\"--jscomp_off=fileoverviewTags\"";
@@ -60,11 +61,8 @@ if ($DEBUG) {
 
 $cmdBuild .= $cmdCompile;
 
-if ($DEBUG) {
   $cmdBuild .= " > compiler.out";
-} else {
-  $cmdBuild .= " > compiler.out 2>&1";
-}
+
 
 system $cmdBuild;
 

@@ -1,4 +1,4 @@
-closure-boilerplate
+server2js
 ===================
 
-A google closure boilerplate repo, fork to construct a google closure based project
+A hook based interface between your server and your JS application

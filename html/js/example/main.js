@@ -1,11 +1,7 @@
 goog.provide('example');
 
-
-goog.require('example.sample2');
-// although we required sample2 to load before sample1
-// sample2 has a require of it's own to load sample1 first, 
-// so this is fixed by the calcdeps script or the compiler 
 goog.require('example.sample1');
+goog.require('example.sample2');
 
 /**
  * Executes inline from our index.html
@@ -14,10 +10,21 @@ goog.require('example.sample1');
  */
 example.init = function()
 {
-  var ret = example.sample2.doStuff();
-  
-  var el = example.sample1.getElement('output');
-  example.sample1.elementHTML(el, ret);
+  example.sample1.init();
+  example.sample2.init();
+
+  $().ready(example.DOMReady);
+};
+
+/**
+ * Triggers when DOM is Ready
+ *
+ * @return {void}
+ */
+example.DOMReady = function()
+{
+  // notify server2js that we are ready
+  ss.server2js.ready();
 };
 
 // export our symbols to the global scope
