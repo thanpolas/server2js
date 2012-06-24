@@ -9,7 +9,6 @@ example.sample2.init = function()
   ss.server2js.hook('paintHello', example.sample2.doStuff, 50);
   ss.server2js.hook('paintReadyExclamation', example.sample2.doStuff, 100, true);
   ss.server2js.hook('writeOutput', example.sample2.doMoreStuff, 100, true);
-
 };
 
 /**

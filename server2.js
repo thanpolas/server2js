@@ -16,19 +16,86 @@
 
 /**
  * @fileoverview server2js May/27/2012
- * Server 2 JS provides an interface between the server and your javascript
+ * Server2JS provides an interface between the server and your javascript
  * application. All your JS codebase can hook to server2js and listen for the
  * server's data objects
  *
  * @see https://github.com/thanpolas/server2js
  */
+goog.provide('ss.Server2js');
 goog.provide('ss.server2js');
 
 /**
- * Declare our input data object definition
- * @typedef {!Array.<Object.<string, *>>}
+ * Server2js constructor
+ *
+ * @constructor
  */
-ss.server2js.dataInput;
+ss.Server2js = function()
+{
+  /** 
+   * @private
+   * @type {boolean} 
+   */
+  this._moreToCome = false;
+
+  /** 
+   * @private
+   * @type {boolean} 
+   */
+  this._disposed = false;
+
+  /** 
+   * @private
+   * @type {boolean} 
+   */
+  this._readyFired = false;
+
+  /** 
+   * @private
+   * @type {boolean} 
+   */
+  this._haveReadyHooks = false;
+
+  /** 
+   * @private
+   * @type {boolean} 
+   */
+  this._haveServerData = false;
+
+  /** 
+   * Data passed by the server is stored here
+   * @private
+   * @type {Array} 
+   */
+  this._serverDataInput = [];
+
+  /** 
+   * All synchronous hooks are here
+   * @private
+   * @type {Array.<ss.server2js.hookItem>} 
+   */
+  this._synchronousHooks = [];
+
+  /** 
+   * All onReady hooks are here
+   * @private
+   * @type {Array.<ss.server2js.hookItem>} 
+   */
+  this._readyHooks = [];
+
+};
+
+/**
+ * Add a custom getInstance static function
+ * which uses ss.server2js.get()
+ *
+ * @see ss.server2js.get
+ * @return {ss.Server2js} -ish
+ */
+ss.Server2js.getInstance = function() {
+  return ss.Server2js.instance_ || (ss.Server2js.instance_ = ss.server2js.get());
+};
+
 
 /** @const {number} */
 ss.server2js.DEFAULT_PRIO = 100;
@@ -39,40 +106,91 @@ ss.server2js.DEFAULT_PRIO = 100;
  */
 ss.server2js.hookItem;
 
-/** @type {ss.server2js.dataInput} */
-ss.server2js._serverDataInput = [];
-
-/** @type {boolean} */
-ss.server2js._haveReadyHooks = false;
-
-/** @type {boolean} */
-ss.server2js._haveServerData = false;
-
-/** @type {Array} */
-ss.server2js._inlineHooks = [];
-
-/** @type {Array} */
-ss.server2js._readyHooks = [];
+/**
+ * HACK HACK HACK
+ * It proved to be quite a tedious task to have an instance of 
+ * a prototypical object double as a function.
+ *
+ * For our case, we want the instance to perform the .run() method
+ * when executed. e.g.
+ * <pre>
+ * var server = ss.server2js.get();
+ * server === server.run; // true
+ *
+ *
+ * @see http://jsfiddle.net/thanpolas/zy9sy/14/
+ * @return {ss.Server2js}
+ */
+ss.server2js.get = function()
+{
+  /** @type {ss.Server2js} */
+  var server2jsInstance = new ss.Server2js();
+  /** @type {ss.Server2js} */
+  var capsule = goog.bind(server2jsInstance.run, server2jsInstance);
+  capsule['run'] = goog.bind(server2jsInstance.run, server2jsInstance);  
+  capsule['hook'] = goog.bind(server2jsInstance.hook, server2jsInstance);
+  capsule['ready'] = goog.bind(server2jsInstance.ready, server2jsInstance);
+  capsule['dispose'] = goog.bind(server2jsInstance.dispose, server2jsInstance);
+  return capsule;
+};
 
 
 /**
- * Run this function synchronously on your html page
+ * Run this function synchronously on the html page
  *
  * @export
- * @param {ss.server2js.dataInput} dataInput
+ * @param {Array|string} dataInput
+ * @param {boolean=} optMoreToCome Set to true if more calls are expected
+ *      and to cancel auto-disposing
  * @return {void}
  */
-ss.server2js.server = function(dataInput)
+ss.Server2js.prototype.run = function(dataInput, optMoreToCome)
 {
-  ss.server2js._haveServerData = true;
-  ss.server2js._runHooks(dataInput, true);
-  // if we don't have any ready hooks, dispose all and return
-  if (!ss.server2js._haveReadyHooks) {
-    ss.server2js._dispose();
-    return;
+  /** @type {Array} */
+  this._serverDataInput = this._parseDataInput(dataInput);
+
+  this._moreToCome = optMoreToCome || false;
+
+  this._haveServerData = true;
+
+  this._runHooks(true);
+
+  // check if ready event fired
+  if (this._readyFired) {
+    this._runHooks(false);
   }
-  // assign the remaining server data for the ready event trigger
-  ss.server2js._serverDataInput = dataInput;
+
+  // if we don't have any ready hooks, dispose
+  if (!this._haveReadyHooks) {
+    this._dispose();
+  }
+};
+
+/**
+ * Will check data input if is an array or string
+ * type and return proper dataInput type
+ *
+ * @private
+ * @param {Array|string} dataInput
+ * @return {Array}
+ */
+ss.Server2js.prototype._parseDataInput = function(dataInput)
+{
+  // check if we got a string (JSON)
+  if ('string' == typeof dataInput) {
+    /**
+     * it's a string, we assume JSON encoded
+     * parse it without try catch statement so the exception
+     * will bubbled up
+     * @type {Array}
+     */
+    var input = JSON.parse(dataInput);
+  } else {
+    var input = dataInput;
+  }
+
+  return Array.prototype.concat(this._serverDataInput, input);
+
 };
 
 /**
@@ -89,31 +207,33 @@ ss.server2js.server = function(dataInput)
  *              should be fired by executing ss.server2js.ready()
  * @return {void}
  */
-ss.server2js.hook = function(nameId, fn, opt_prio, opt_onReady)
+ss.Server2js.prototype.hook = function(nameId, fn, opt_prio, opt_onReady)
 {
-  var prio = opt_prio || ss.server2js.DEFAULT_PRIO;
   /** @type {ss.server2js.hookItem} */
   var hook = {
     nameId: nameId,
     fn: fn,
-    prio: prio,
+    prio: opt_prio || ss.server2js.DEFAULT_PRIO,
     ready: opt_onReady
   };
+
   // check if we want to trigger after we get the Ready event
   if (opt_onReady) {
-    ss.server2js._haveReadyHooks = true;
-    ss.server2js._readyHooks.push(hook);
+    this._haveReadyHooks = true;
+    this._readyHooks.push(hook);
+    // check if ready event has fired
+    if (this._readyFired) {
+      this._runHooks(false);
+    }
   } else {
-    // inline execution, check if we got server data
-    if (ss.server2js._haveServerData) {
-      // directly execute
-      ss.server2js._runHook(hook, true);
-    } else {
-      // queue up
-      ss.server2js._inlineHooks.push(hook);
+    //  synchronous execution, queue up
+    this._synchronousHooks.push(hook);
+    //check if we have server data
+    if (this._haveServerData) {
+      // run hooks
+      this._runHooks(true);
     }
   }
-
 };
 
 /**
@@ -123,55 +243,96 @@ ss.server2js.hook = function(nameId, fn, opt_prio, opt_onReady)
  * @export
  * @return {void}
  */
-ss.server2js.ready = function()
+ss.Server2js.prototype.ready = function()
 {
-  // if we don't have any ready hooks, dispose all and return
-  if (!ss.server2js._haveReadyHooks || !ss.server2js._haveServerData) {
-    ss.server2js._dispose();
+  // no need to do anything if ready event was triggered
+  if (this._readyFired) {
     return;
   }
-  ss.server2js._runHooks(ss.server2js._serverDataInput, false);
+  this._readyFired = true;
+
+  // if we don't have any ready hooks, dispose all and return
+  if (!this._haveReadyHooks) {
+    this._dispose();
+    return;
+  }
+  this._runHooks(false);
 };
 
 /**
- * Dispose all disposable objects. Clean up!
+ * Publicly exposed dispose method.
+ * This method will force a dispose in case we are
+ * in a 'moreToCome' state
+ *
+ * @return {boolean} true if we disposed
+ */
+ss.Server2js.prototype.dispose = function()
+{
+  return this._dispose(true);
+};
+
+/**
+ * The actual dispose method.
+ * All internal methods should call this method with
+ * no parameters. Only publicly exposed dispose() method
+ * can call with a param of true so 'moreToCome' state
+ * can be overriden and perform the disposal
  *
  * @private
- * @return {void} true
+ * @param {boolean=} opt_override override the moreToCome state
+ * @return {boolean}
  */
-ss.server2js._dispose = function()
+ss.Server2js.prototype._dispose = function (opt_override)
 {
-  delete ss.server2js._inlineHooks;
-  delete ss.server2js._readyHooks;
-  delete ss.server2js._serverDataInput;
-  delete ss.server2js.hook;
-  delete ss.server2js._runHooks;
+  // check if in moreToCome state and no override
+  if (!opt_override && this._moreToCome) {
+    return false;
+  }
+  // check if already disposed
+  if (this._disposed) {
+    return false;
+  }
+
+  delete this._readyHooks;
+  delete this._synchronousHooks;
+  delete this._serverDataInput;
+
+  this._disposed = true;
+
+  return true;
 };
 
 /**
- * Executes inline when we get data from the server
- * Sorts our hooks based on their prio and starts
- * executing
+ * Sorts hooks based on their prio and after matching hook with
+ * server data object, starts executing
+ *
  * @private
- * @param {ss.server2js.dataInput} dataInput
- * @param {boolean} isInline
+ * @param {boolean} isSynch
  * @return {void}
  */
-ss.server2js._runHooks = function(dataInput, isInline)
+ss.Server2js.prototype._runHooks = function(isSynch)
 {
-  var hooks = (isInline ? ss.server2js._inlineHooks : ss.server2js._readyHooks);
+  /** @type {Array.<ss.server2js.hookItem>} */
+  var hooks = (isSynch ? this._synchronousHooks : this._readyHooks);
+
   // sort all hooks in reverse order based on their prio
-  Array.prototype.sort.call(hooks, ss.server2js._sortFunc);
+  Array.prototype.sort.call(hooks, this._sortFunc);
+  /** @type {number} */
   var l = hooks.length;
+
   while(l--) {
+    /** @type {ss.server2js.hookItem} */
     var hook = hooks[l];
+
     // store here all the matching indexes
     var foundIn = [];
+
     // search in the server data for the current hook's nameId
-    for (var i = 0, ldata = dataInput.length; i < ldata; i++) {
-      if (hook.nameId == dataInput[i]['nameId']) {
+    for (var i = 0, ldata = this._serverDataInput.length; i < ldata; i++) {
+
+      if (hook.nameId == this._serverDataInput[i]['nameId']) {
         // found a match, run
-        ss.server2js._runHook(hook, dataInput[i]['value']);
+        this._runHook(hook, this._serverDataInput[i]['value']);
         foundIn.push(i);
         // do not break, we support duplicate nameId's in the
         // server's data object
@@ -179,7 +340,9 @@ ss.server2js._runHooks = function(dataInput, isInline)
     }
     // remove from server data (dataInput) the executed hooks
     for (var i = 0, lfound = foundIn.length; i < lfound; i++) {
-      Array.prototype.splice.call(dataInput, foundIn[i], 1);
+      // for every item spliced, we need to substruct the index
+      // because the array is altered --> foundIn[i] - i
+      Array.prototype.splice.call(this._serverDataInput, foundIn[i] - i, 1);
     }
   }
 };
@@ -187,11 +350,12 @@ ss.server2js._runHooks = function(dataInput, isInline)
 /**
  * Our hook sorting function
  * We reverse sort them so we can run from end to start
+ * @private
  * @param {ss.server2js.hookItem} a
  * @param {ss.server2js.hookItem} b
  * @return {boolean}
  */
-ss.server2js._sortFunc = function(a, b)
+ss.Server2js.prototype._sortFunc = function(a, b)
 {
   return a.prio < b.prio;
 };
@@ -204,7 +368,7 @@ ss.server2js._sortFunc = function(a, b)
  * @param {*} theValue The value to execute with
  * @return {void}
  */
-ss.server2js._runHook = function(hook, theValue)
+ss.Server2js.prototype._runHook = function(hook, theValue)
 {
   hook.fn(theValue);
 };
