@@ -1,2 +1,2 @@
-bin/compiler.out
-bin/compilerserver2js.out
+node_modules
+closure-library
