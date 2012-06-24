@@ -2,18 +2,18 @@
 
 Server to JS is a hook based interface between your server and your JS application.
 
-* **Tiny** server2.js is only 984 bytes (544 bytes gzipped)
-* **Hook based** You can hook and listen for server calls from anywhere in your JS application
-* **Prioritized** You control the sequence of execution for your hooks
-* **Synchronous** Execution of hooks is synchronous. As soon as the server passes the data object your hooks are executed synchronously, can't get any faster than this.
+* **Tiny** server2.js is only 1,874 bytes (826 bytes gzipped).
+* **Hook based** You can hook and listen for server calls from anywhere in your JS application.
+* **Prioritized** You control the sequence of execution for your hooks.
+* **Synchronous** Execution of hooks is synchronous. As soon as the server passes the data. object your hooks are executed synchronously, can't get any faster than this.
 * **Ready Option** Optionally you may select your hooks to trigger on a `Ready` event that you define.
-* **GC OK!** When everything is done server2js will delete all references to the data objects used. Happy Garbage Collection!
+* **GC OK!** When everything is done server2.js will delete all references to the data objects used. Happy Garbage Collection!
 
 ## Quick start
 
 [Get the latest version (1.1.0)](https://github.com/thanpolas/server2js/raw/master/server2.min.js).
 
-[Or check out the source](https://github.com/thanpolas/server2js/raw/master/server2.js).
+[Or check out the source](https://github.com/thanpolas/server2js/blob/master/server2.js).
 
 
 ## Documentation
@@ -33,7 +33,7 @@ var allData = [
   {nameId: 'module2', value: true},
   {nameId: 'module1', value: {modId:2, conf:'go'}/* nameId can be duplicated */}
   ];
-// Pass your array to server2js
+// Pass your array to server2.js
 ss.server(allData);
 ```
 
@@ -41,12 +41,12 @@ ss.server(allData);
 
 #### Beware of Disposing!
 
-By default we expect a single call to the `ss.server()` method. When that call is made, and after every attached hook has been executed, **server2js automatically disposes** all it's internal references to data objects, in hopes of helping the JS Garbage Collector clean up. 
+By default we expect a single call to the `ss.server()` method. When that call is made, and after every attached hook has been executed, **server2.js automatically disposes** all it's internal references to data objects, in hopes of helping the JS Garbage Collector clean up. 
 
 This action, in effect, **destroys the instance**, making it totally unusable to any further calls. There are two ways to avoid or circumvent this behavior:
 
-  1. Set the second parameter (`moreToCome`) of the `ss.server()` method to `true`. This will instruct server2js to not automatically dispose, and wait for additional hooks to attach or server calls to be made. In this case, be kind enough to call the `ss.server.dispose()` method when appropriate.
-  2. Create a new server2js instance. This solution is not really recommended, however the ability exists.
+  1. Set the second parameter (`moreToCome`) of the `ss.server()` method to `true`. This will instruct server2.js to not automatically dispose, and wait for additional hooks to attach or server calls to be made. In this case, be kind enough to call the [ss.server.dispose()](https://github.com/thanpolas/server2js#the-dispose-method) method when appropriate.
+  2. Create a new server2.js instance. This solution is not really recommended, however [the ability exists](https://github.com/thanpolas/server2js#the-class).
   
 **Important Note** When calling `ss.server()` multiple times, you have to use the `moreToCome` switch **every time** or automatic disposal will kick in!
 
@@ -54,7 +54,7 @@ This action, in effect, **destroys the instance**, making it totally unusable to
 
 #### The hook() Method
 
-Your modules can hook to server2js using the `ss.server.hook()` method.
+Your modules can hook to server2.js using the `ss.server.hook()` method.
 
 ```javascript
 ss.server.hook(hookName, fn [,priority, onReady]);
@@ -79,7 +79,7 @@ The two optional parameters for `ss.server.hook` are:
 
 #### The ready() Method
 
-Because server2js is agnostic of the meaning of a 'Ready Event' you have to trigger it yourself:
+Because server2.js is agnostic of the meaning of a 'Ready Event' you have to trigger it yourself:
 
 ```javascript
   ss.server.ready();
@@ -97,13 +97,13 @@ $().ready(function(){
 
 #### The dispose() Method
 
-In the case when you instructed server2js to not auto-dispose, `ss.server.dispose()` is the method to call for manual disposing the references to the contained data objects. `dispose()` returns a boolean value for success or failure.
+In the case when you instructed server2.js to not auto-dispose, `ss.server.dispose()` is the method to call for manual disposing the references to the contained data objects. `dispose()` returns a boolean value for success or failure.
 
 ```javascript
 ss.server.dispose();
 ```
 
-**Important Note** After calling this method, the server2js instance will be destroyed and will no longer be usable.
+**Important Note** After calling this method, the server2.js instance will be destroyed and will no longer be usable.
 
 #### The Class
 
@@ -124,6 +124,8 @@ The order of loading the scripts matters.
   4. If you have onReady hooks, remember to trigger the ready event `ss.server.ready()`
 
 ## More Examples
+
+For more complex configurations check out [the tests](https://github.com/thanpolas/server2js/blob/master/test/unit/server2js.test.js). 
 
 ### Your html
 
@@ -195,7 +197,7 @@ The html file as served by your server:
 </html>
 ```
 
-### Your awesomeApp.js
+### The awesomeApp.js
 
 ```javascript
 // setup our namespace
@@ -206,7 +208,7 @@ window.awesome.app = window.awesome.app || {};
 awesome.app.multiplier = NaN;
 
 /**
- * Hook to server2js on init (called in the end of this file)
+ * Hook to server2.js on init (called in the end of this file)
  *
  */
 awesome.app.init = function()
@@ -250,7 +252,7 @@ awesome.app.setMultiplier = function(num)
 })();
 ```
 
-### Your awesomeController.js
+### The awesomeController.js
 
 ```javascript
 // setup our namespace
@@ -258,7 +260,7 @@ window.awesome = window.awesome || {};
 window.awesome.controller = window.awesome.controller || {};
 
 /**
- * Attach all needed hooks to server2js
+ * Attach all needed hooks to server2.js
  *
  * Fires up synchronously in the end of this file
  */
@@ -323,7 +325,7 @@ awesome.controller.doMoreStuff = function(data)
   // attach all hooks
   awesome.controller.init();
 
-  // Listen for the DOM ready event and trigger server2js ready event
+  // Listen for the DOM ready event and trigger server2.js ready event
   $().ready(function(){
     // trigger all onReady hooks
     ss.server.ready();
