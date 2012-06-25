@@ -32,54 +32,54 @@ goog.provide('ss.server2js');
  */
 ss.Server2js = function()
 {
-  /** 
+  /**
    * @private
-   * @type {boolean} 
+   * @type {boolean}
    */
   this._moreToCome = false;
 
-  /** 
+  /**
    * @private
-   * @type {boolean} 
+   * @type {boolean}
    */
   this._disposed = false;
 
-  /** 
+  /**
    * @private
-   * @type {boolean} 
+   * @type {boolean}
    */
   this._readyFired = false;
 
-  /** 
+  /**
    * @private
-   * @type {boolean} 
+   * @type {boolean}
    */
   this._haveReadyHooks = false;
 
-  /** 
+  /**
    * @private
-   * @type {boolean} 
+   * @type {boolean}
    */
   this._haveServerData = false;
 
-  /** 
+  /**
    * Data passed by the server is stored here
    * @private
-   * @type {Object} 
+   * @type {Object}
    */
   this._serverDataInput = {};
 
-  /** 
+  /**
    * All synchronous hooks are here
    * @private
-   * @type {Array.<ss.server2js.hookItem>} 
+   * @type {Array.<ss.server2js.hookItem>}
    */
   this._synchronousHooks = [];
 
-  /** 
+  /**
    * All onReady hooks are here
    * @private
-   * @type {Array.<ss.server2js.hookItem>} 
+   * @type {Array.<ss.server2js.hookItem>}
    */
   this._readyHooks = [];
 
@@ -114,7 +114,7 @@ ss.server2js.hookItem;
 
 /**
  * HACK HACK HACK
- * It proved to be quite a tedious task to have an instance of 
+ * It proved to be quite a tedious task to have an instance of
  * a prototypical object also be a function.
  *
  * In our case, we want the instance to perform the .run() method
@@ -124,15 +124,15 @@ ss.server2js.hookItem;
  * server === server.run; // true
  *
  * @see http://jsfiddle.net/thanpolas/zy9sy/14/
- * @return {ss.Server2js}
+ * @return {function((Array|null|string), boolean=)}
  */
 ss.server2js.get = function()
 {
   /** @type {ss.Server2js} */
   var server2jsInstance = new ss.Server2js();
-  /** @type {ss.Server2js} */
+  /** @type {function((Array|null|string), boolean=)} */
   var capsule = goog.bind(server2jsInstance.run, server2jsInstance);
-  capsule['run'] = goog.bind(server2jsInstance.run, server2jsInstance);  
+  capsule['run'] = goog.bind(server2jsInstance.run, server2jsInstance);
   capsule['hook'] = goog.bind(server2jsInstance.hook, server2jsInstance);
   capsule['ready'] = goog.bind(server2jsInstance.ready, server2jsInstance);
   capsule['dispose'] = goog.bind(server2jsInstance.dispose, server2jsInstance);
@@ -150,7 +150,7 @@ ss.server2js.get = function()
  */
 ss.Server2js.prototype.run = function(dataInput, optMoreToCome)
 {
-  
+
   this._parseDataInput(dataInput);
 
   this._moreToCome = optMoreToCome || false;
@@ -180,51 +180,53 @@ ss.Server2js.prototype.run = function(dataInput, optMoreToCome)
  */
 ss.Server2js.prototype._parseDataInput = function(dataInput)
 {
+  /** @type {*?} */
+  var input;
+  
   // check if we got a string (JSON)
   if ('string' == typeof dataInput) {
     /**
      * it's a string, we assume JSON encoded
      * parse it without a try catch statement so of an exception
      * occurs it will get bubbled up
-     * @type {Array}
      */
-    var input = JSON.parse(dataInput);
+    input = JSON.parse(dataInput);
   } else {
-    var input = dataInput;
+    input = dataInput;
   }
-  
+
   if (!goog.isArray(input)) {
     // not valid
     return;
   }
-  
+
   // loop through the operations and assign by key to our data object
   for (var i = 0, l = input.length; i < l; i++) {
     // get operation name
     var op = input[i][ss.server2js.OPERATION_KEY];
-    
+
     // check if already set
     if (this._serverDataInput[op]) {
-      
+
       // it's already set, check if array or object
       if (goog.isArray(this._serverDataInput[op])) {
-        
+
         this._serverDataInput[op].push(input[i]);
-        
+
       } else {
-        
+
         // it is an object, put in an array with the new operation
         this._serverDataInput[op] = [
           this._serverDataInput[op],
           input[i]
         ];
-        
+
       }
     } else {
-      
+
       // not set, assign
       this._serverDataInput[op] = input[i];
-      
+
     }
   }
 
@@ -353,7 +355,7 @@ ss.Server2js.prototype._runHooks = function(isSynch)
 {
   /** @type {Array.<ss.server2js.hookItem>} */
   var hooks = (isSynch ? this._synchronousHooks : this._readyHooks);
-  
+
   // sort all hooks in reverse order based on their prio
   Array.prototype.sort.call(hooks, this._sortFunc);
   /** @type {number} */
@@ -373,8 +375,10 @@ ss.Server2js.prototype._runHooks = function(isSynch)
     }
   }
   // remove from server data (dataInput) the executed hooks
-  for (var i = 0, lfound = foundIn.length; i < lfound; i++) {
-    Array.prototype.splice.call(hooks, foundIn[i], 1);  
+  i = 0;
+  var lfound = foundIn.length;
+  for (; i < lfound; i++) {
+    Array.prototype.splice.call(hooks, foundIn[i], 1);
   }
 };
 
@@ -399,7 +403,7 @@ ss.Server2js.prototype._sortFunc = function(a, b)
  *
  * @private
  * @param {ss.server2js.hookItem} hook
- * @params {string} operation The operation to execute
+ * @param {string} operation The operation to execute
  * @return {void}
  */
 ss.Server2js.prototype._runHook = function(hook, operation)
@@ -413,8 +417,8 @@ ss.Server2js.prototype._runHook = function(hook, operation)
   } else {
     hook.fn(dataObj[ss.server2js.VALUE_KEY]);
   }
-  
+
   // remove the server key
-  delete this._serverDataInput[operation];  
+  delete this._serverDataInput[operation];
 };
 

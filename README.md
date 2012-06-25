@@ -2,7 +2,7 @@
 
 Server to JS is a hook based interface between your server and your JS application.
 
-* **Tiny** server2.js is only 2,657 bytes (1,075 bytes gzipped).
+* **Tiny** server2.js is only 2,659 bytes (1,078 bytes gzipped).
 * **Hook based** Hook and listen for server calls from anywhere in your JS application.
 * **Prioritized** Control the sequence of hook execution.
 * **Synchronous** Execution of hooks is synchronous. As soon as server passes the data object, hooks are executed! Fast!
@@ -11,9 +11,9 @@ Server to JS is a hook based interface between your server and your JS applicati
 
 ## Quick start
 
-[Get the latest version (1.1.1)](https://github.com/thanpolas/server2js/raw/master/server2.min.js).
+[Get the latest version (1.1.2)](https://github.com/thanpolas/server2js/raw/master/dist/server2.min.js).
 
-[Or check out the source](https://github.com/thanpolas/server2js/blob/master/server2.js).
+[Or check out the source](https://github.com/thanpolas/server2js/blob/master/source/server2.js).
 
 ## Documentation
 ### Server API

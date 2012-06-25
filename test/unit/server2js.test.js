@@ -1,7 +1,7 @@
 module('ss.server2js', {
-  setup: function(){    
+  setup: function(){
   },
-  teardown: function() {    
+  teardown: function() {
   }
 });
 
@@ -71,9 +71,9 @@ var getParams = function(opt_JSON)
 
 test('Core functionality', function() {
   expect( 5 );
-  
+
   stop();
-  
+
   var s = ss.server;
 
   function multiplier(data)
@@ -93,9 +93,9 @@ test('Core functionality', function() {
   }
   function closingHookz(data)
   {
-    equal(data.elementValue, '!', 'object containing string value hook key 3');    
+    equal(data.elementValue, '!', 'object containing string value hook key 3');
     start();
-    
+
   }
 
   s.hook('multiplier', multiplier);
@@ -109,11 +109,11 @@ test('Core functionality', function() {
 
 test('Execution Priority and Ready event', function() {
   expect( 16 );
-  
+
   stop();
-  
+
   var server = ss.server.Server2jsClass();
-  
+
   // priority tracker
   var sequence = 1;
   // ready fired
@@ -150,7 +150,7 @@ test('Execution Priority and Ready event', function() {
     equal(sequence, 5, 'Our execution sequence should be 5');
     ok(ready, 'Ready should be true');
     start();
-        
+
   }
 
   function fireWhenReady(data)
@@ -178,11 +178,11 @@ test('Execution Priority and Ready event', function() {
 
 test('More to come mode', function(){
   expect( 36 );
-  
+
   stop();
-  
+
   var server = ss.server.Server2jsClass();
-  
+
   // priority tracker
   var sequence = 1;
   // ready fired
@@ -234,7 +234,7 @@ test('More to come mode', function(){
     equal(data.elementValue, '!', 'notSoClosingHook - object containing string value hook key 3');
     equal(sequence, 7, 'Our execution sequence should be 7');
     ok(ready, 'Ready should be true');
-    sequence++;    
+    sequence++;
   }
 
   function fireWhenReady(data)
@@ -320,19 +320,19 @@ test('More to come mode', function(){
   ], true);
 
   server.hook('lazyFooReady', lazyFooReady, 1, true);
-  
+
   ok(server.dispose(), 'dispose() should return true');
-  ok(!server.dispose(), 'second call to dispose() should return false');  
-  
+  ok(!server.dispose(), 'second call to dispose() should return false');
+
 });
 
 test('Edge cases', function() {
   expect( 12 );
-  
+
   stop();
-  
+
   var server = ss.server.Server2jsClass();
-  
+
   // priority tracker
   var sequence = 1;
   // ready fired
@@ -386,7 +386,7 @@ test('Edge cases', function() {
 
   server.hook('multiplier', multiplier, 500);
   // a second hook on the same operation will not trigger
-  server.hook('multiplier', falseFunc, 510);  
+  server.hook('multiplier', falseFunc, 510);
   server.hook('writeOutput', writeOutput, 1);
   server.hook('paintHello', paintHello, 5);
   server.hook('notExists', falseFunc, 50);
@@ -397,9 +397,9 @@ test('Edge cases', function() {
   server(getParams());
   // when .ready() has not executed, while we have ready hooks
   // auto-dispose will not happen...
-  ok(server.dispose(), 'dispose should return true');  
+  ok(server.dispose(), 'dispose should return true');
   ok(!server.dispose(), 'dispose should return false');
-  
+
   // never call ready events
-  
+
 });
