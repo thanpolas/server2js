@@ -15,10 +15,10 @@
  */
 
 /**
- * @fileoverview server2js May/27/2012
- * Server2JS provides an interface between the server and your javascript
- * application. All your JS codebase can hook to server2js and listen for the
- * server's data objects
+ * @fileoverview server2js May / 27 / 2012
+ * Server2.js provides an interface between the server and the javascript
+ * application. All JS codebase can hook to server2js and listen for the
+ * server's operations
  *
  * @see https://github.com/thanpolas/server2js
  */
@@ -65,9 +65,9 @@ ss.Server2js = function()
   /** 
    * Data passed by the server is stored here
    * @private
-   * @type {Array} 
+   * @type {Object} 
    */
-  this._serverDataInput = [];
+  this._serverDataInput = {};
 
   /** 
    * All synchronous hooks are here
@@ -100,6 +100,12 @@ ss.Server2js.getInstance = function() {
 /** @const {number} */
 ss.server2js.DEFAULT_PRIO = 100;
 
+/** @const {string} */
+ss.server2js.OPERATION_KEY = 'op';
+
+/** @const {string} */
+ss.server2js.VALUE_KEY = 'val';
+
 /**
  * Declare our internal hook type
  * @typedef {!Object.<string, function(*), number, ?boolean >}
@@ -109,14 +115,13 @@ ss.server2js.hookItem;
 /**
  * HACK HACK HACK
  * It proved to be quite a tedious task to have an instance of 
- * a prototypical object double as a function.
+ * a prototypical object also be a function.
  *
- * For our case, we want the instance to perform the .run() method
+ * In our case, we want the instance to perform the .run() method
  * when executed. e.g.
  * <pre>
  * var server = ss.server2js.get();
  * server === server.run; // true
- *
  *
  * @see http://jsfiddle.net/thanpolas/zy9sy/14/
  * @return {ss.Server2js}
@@ -138,16 +143,15 @@ ss.server2js.get = function()
 /**
  * Run this function synchronously on the html page
  *
- * @export
  * @param {Array|string} dataInput
  * @param {boolean=} optMoreToCome Set to true if more calls are expected
- *      and to cancel auto-disposing
+ *      or to cancel auto-disposing
  * @return {void}
  */
 ss.Server2js.prototype.run = function(dataInput, optMoreToCome)
 {
-  /** @type {Array} */
-  this._serverDataInput = this._parseDataInput(dataInput);
+  
+  this._parseDataInput(dataInput);
 
   this._moreToCome = optMoreToCome || false;
 
@@ -172,7 +176,7 @@ ss.Server2js.prototype.run = function(dataInput, optMoreToCome)
  *
  * @private
  * @param {Array|string} dataInput
- * @return {Array}
+ * @return {void}
  */
 ss.Server2js.prototype._parseDataInput = function(dataInput)
 {
@@ -180,38 +184,71 @@ ss.Server2js.prototype._parseDataInput = function(dataInput)
   if ('string' == typeof dataInput) {
     /**
      * it's a string, we assume JSON encoded
-     * parse it without try catch statement so the exception
-     * will bubbled up
+     * parse it without a try catch statement so of an exception
+     * occurs it will get bubbled up
      * @type {Array}
      */
     var input = JSON.parse(dataInput);
   } else {
     var input = dataInput;
   }
-
-  return Array.prototype.concat(this._serverDataInput, input);
+  
+  if (!goog.isArray(input)) {
+    // not valid
+    return;
+  }
+  
+  // loop through the operations and assign by key to our data object
+  for (var i = 0, l = input.length; i < l; i++) {
+    // get operation name
+    var op = input[i][ss.server2js.OPERATION_KEY];
+    
+    // check if already set
+    if (this._serverDataInput[op]) {
+      
+      // it's already set, check if array or object
+      if (goog.isArray(this._serverDataInput[op])) {
+        
+        this._serverDataInput[op].push(input[i]);
+        
+      } else {
+        
+        // it is an object, put in an array with the new operation
+        this._serverDataInput[op] = [
+          this._serverDataInput[op],
+          input[i]
+        ];
+        
+      }
+    } else {
+      
+      // not set, assign
+      this._serverDataInput[op] = input[i];
+      
+    }
+  }
 
 };
 
 /**
- * Use this function to hook for a server's data object
+ * Use this function to hook to a server operation
  *
  * @export
- * @param {string} nameId Your module's unique name id
+ * @param {string} op The operation name
  * @param {function(*)} fn Function to execute with the provided,
  *      from the server, data object
  * @param {number=} opt_prio Priority to execute the hook. Default: 100
  *      (smaller priority, faster the execution)
  * @param {boolean=} opt_onReady Set to true to run after a ready event
  *      NOTE: You have to externally trigger when that 'ready' event
- *              should be fired by executing ss.server2js.ready()
+ *              should be fired by executing the ready() method
  * @return {void}
  */
-ss.Server2js.prototype.hook = function(nameId, fn, opt_prio, opt_onReady)
+ss.Server2js.prototype.hook = function(op, fn, opt_prio, opt_onReady)
 {
   /** @type {ss.server2js.hookItem} */
   var hook = {
-    nameId: nameId,
+    op: op,
     fn: fn,
     prio: opt_prio || ss.server2js.DEFAULT_PRIO,
     ready: opt_onReady
@@ -237,10 +274,9 @@ ss.Server2js.prototype.hook = function(nameId, fn, opt_prio, opt_onReady)
 };
 
 /**
- * Run whenever we have a ready event like DOM ready
- * Will execute all hook that depend on the ready event
+ * Execute to trigger the ready event.
+ * Will execute all hooks that depend on the ready event
  *
- * @export
  * @return {void}
  */
 ss.Server2js.prototype.ready = function()
@@ -306,6 +342,9 @@ ss.Server2js.prototype._dispose = function (opt_override)
  * Sorts hooks based on their prio and after matching hook with
  * server data object, starts executing
  *
+ * Each hook that gets executed gets deleted
+ * Each server operation that triggers gets deleted
+ *
  * @private
  * @param {boolean} isSynch
  * @return {void}
@@ -314,41 +353,33 @@ ss.Server2js.prototype._runHooks = function(isSynch)
 {
   /** @type {Array.<ss.server2js.hookItem>} */
   var hooks = (isSynch ? this._synchronousHooks : this._readyHooks);
-
+  
   // sort all hooks in reverse order based on their prio
   Array.prototype.sort.call(hooks, this._sortFunc);
   /** @type {number} */
-  var l = hooks.length;
-
-  while(l--) {
+  var i = hooks.length;
+  /** @type {Array} store indexes of executed hooks for delition */
+  var foundIn = [];
+  // iterate over all hooks
+  while(i--) {
     /** @type {ss.server2js.hookItem} */
-    var hook = hooks[l];
-
-    // store here all the matching indexes
-    var foundIn = [];
-
-    // search in the server data for the current hook's nameId
-    for (var i = 0, ldata = this._serverDataInput.length; i < ldata; i++) {
-
-      if (hook.nameId == this._serverDataInput[i]['nameId']) {
-        // found a match, run
-        this._runHook(hook, this._serverDataInput[i]['value']);
-        foundIn.push(i);
-        // do not break, we support duplicate nameId's in the
-        // server's data object
-      }
+    var hook = hooks[i];
+    /** @type {string} get operation name */
+    var op = hook.op;
+    // if operation found in server data, execute and mark hook for deletion
+    if (this._serverDataInput[op]) {
+      this._runHook(hook, op);
+      foundIn.push(i);
     }
-    // remove from server data (dataInput) the executed hooks
-    for (var i = 0, lfound = foundIn.length; i < lfound; i++) {
-      // for every item spliced, we need to substruct the index
-      // because the array is altered --> foundIn[i] - i
-      Array.prototype.splice.call(this._serverDataInput, foundIn[i] - i, 1);
-    }
+  }
+  // remove from server data (dataInput) the executed hooks
+  for (var i = 0, lfound = foundIn.length; i < lfound; i++) {
+    Array.prototype.splice.call(hooks, foundIn[i], 1);  
   }
 };
 
 /**
- * Our hook sorting function
+ * Our hook sorting method
  * We reverse sort them so we can run from end to start
  * @private
  * @param {ss.server2js.hookItem} a
@@ -362,14 +393,28 @@ ss.Server2js.prototype._sortFunc = function(a, b)
 
 
 /**
- * Execute the hook
+ * Execute the hook, check if multiple values passed from server
+ *
+ * After execution, remove the server values
+ *
  * @private
  * @param {ss.server2js.hookItem} hook
- * @param {*} theValue The value to execute with
+ * @params {string} operation The operation to execute
  * @return {void}
  */
-ss.Server2js.prototype._runHook = function(hook, theValue)
+ss.Server2js.prototype._runHook = function(hook, operation)
 {
-  hook.fn(theValue);
+  var dataObj = this._serverDataInput[operation];
+  if (goog.isArray(dataObj)) {
+    // multiple values
+    for (var i = 0, l = dataObj.length; i < l; i++) {
+      hook.fn(dataObj[i][ss.server2js.VALUE_KEY]);
+    }
+  } else {
+    hook.fn(dataObj[ss.server2js.VALUE_KEY]);
+  }
+  
+  // remove the server key
+  delete this._serverDataInput[operation];  
 };
 

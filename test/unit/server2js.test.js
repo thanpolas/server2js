@@ -11,44 +11,44 @@ var ParamsFixture = function()
 {
   return [
     {
-      nameId: 'paintWorld',
-      value: {
+      op: 'paintWorld',
+      val: {
         elementId: 'helloWorld',
         elementValue: ' World'
       }
     },
     {
-      nameId: 'paintHello',
-      value: {
+      op: 'paintHello',
+      val: {
         elementId: 'helloWorld',
         elementValue: 'Hello'
       }
     },
     {
-      nameId: 'paintHello',
-      value: {
+      op: 'paintHello',
+      val: {
         elementId: 'doubleHello',
         elementValue: 'Hello^2'
       }
     },
     {
-      nameId: 'writeOutput',
-      value: true
+      op: 'writeOutput',
+      val: true
     },
     {
-      nameId: 'multiplier',
-      value: 10
+      op: 'multiplier',
+      val: 10
     },
     {
-      nameId: 'paintReadyExclamation',
-      value: {
+      op: 'paintReadyExclamation',
+      val: {
         elementId: 'helloWorld',
         elementValue: '!'
       }
     },
     {
-      nameId: 'fireWhenReady',
-      value: [5,6,7]
+      op: 'fireWhenReady',
+      val: [5,6,7]
     }
   ];
 };
@@ -283,8 +283,6 @@ test('More to come mode', function(){
 
   }
 
-
-
   server.hook('multiplier', multiplier, 500);
   server.hook('writeOutput', writeOutput, 20);
   server.hook('paintWorld', paintWorld, 50);
@@ -301,9 +299,9 @@ test('More to come mode', function(){
 
   // now call server with a few additional instructions
   server.run([
-    {nameId: 'eagerLoaded', value: 'fun'},
-    {nameId: 'lazyLoaded', value: 'more fun'},
-    {nameId: 'lazyLoadedReady', value: 'and more fun'}
+    {op: 'eagerLoaded', val: 'fun'},
+    {op: 'lazyLoaded', val: 'more fun'},
+    {op: 'lazyLoadedReady', val: 'and more fun'}
   ], true);
 
   // lazily attach hooks
@@ -316,9 +314,9 @@ test('More to come mode', function(){
 
   // now call server with a few additional instructions
   server([
-    {nameId: 'eagerFoo', value: 'foo fun'},
-    {nameId: 'eagerFooReady', value: 'poo fun'},
-    {nameId: 'lazyFooReady', value: 'lazy poo fun'}
+    {op: 'eagerFoo', val: 'foo fun'},
+    {op: 'eagerFooReady', val: 'poo fun'},
+    {op: 'lazyFooReady', val: 'lazy poo fun'}
   ], true);
 
   server.hook('lazyFooReady', lazyFooReady, 1, true);
@@ -329,7 +327,7 @@ test('More to come mode', function(){
 });
 
 test('Edge cases', function() {
-  expect( 10 );
+  expect( 12 );
   
   stop();
   
@@ -357,9 +355,9 @@ test('Edge cases', function() {
     sequence++;
   }
 
-  function paintWorld(data)
+  function falseFunc(data)
   {
-    ok(false, 'paintWorld function should never be called');
+    ok(false, 'falseFunc function should never be called');
     start();
   }
 
@@ -386,27 +384,22 @@ test('Edge cases', function() {
     }
   }
 
-  function closingHook(data)
-  {
-    ok(false, 'closingHook function should never be called');
-    start();
-  }
-
-  function fireWhenReady(data)
-  {
-    ok(false, 'fireWhenReady function should never be called');
-    start();
-  }
-
   server.hook('multiplier', multiplier, 500);
+  // a second hook on the same operation will not trigger
+  server.hook('multiplier', falseFunc, 510);  
   server.hook('writeOutput', writeOutput, 1);
   server.hook('paintHello', paintHello, 5);
-  server.hook('notExists', paintWorld, 50);
-  server.hook('paintReadyExclamation', closingHook, 10, true);
-  server.hook('fireWhenReady', fireWhenReady, 2, true);
+  server.hook('notExists', falseFunc, 50);
+  server.hook('paintReadyExclamation', falseFunc, 10, true);
+  server.hook('fireWhenReady', falseFunc, 2, true);
 
   // use native array and alias name
   server(getParams());
+  // when .ready() has not executed, while we have ready hooks
+  // auto-dispose will not happen...
+  ok(server.dispose(), 'dispose should return true');  
+  ok(!server.dispose(), 'dispose should return false');
+  
   // never call ready events
   
 });

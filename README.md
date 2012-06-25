@@ -2,24 +2,23 @@
 
 Server to JS is a hook based interface between your server and your JS application.
 
-* **Tiny** server2.js is only 1,874 bytes (826 bytes gzipped).
-* **Hook based** You can hook and listen for server calls from anywhere in your JS application.
-* **Prioritized** You control the sequence of execution for your hooks.
-* **Synchronous** Execution of hooks is synchronous. As soon as the server passes the data. object your hooks are executed synchronously, can't get any faster than this.
-* **Ready Option** Optionally you may select your hooks to trigger on a `Ready` event that you define.
+* **Tiny** server2.js is only 2,657 bytes (1,075 bytes gzipped).
+* **Hook based** Hook and listen for server calls from anywhere in your JS application.
+* **Prioritized** Control the sequence of hook execution.
+* **Synchronous** Execution of hooks is synchronous. As soon as server passes the data object, hooks are executed! Fast!
+* **Ready Option** Optionally you may trigger a hook on a `Ready` event that you define.
 * **GC OK!** When everything is done server2.js will delete all references to the data objects used. Happy Garbage Collection!
 
 ## Quick start
 
-[Get the latest version (1.1.0)](https://github.com/thanpolas/server2js/raw/master/server2.min.js).
+[Get the latest version (1.1.1)](https://github.com/thanpolas/server2js/raw/master/server2.min.js).
 
 [Or check out the source](https://github.com/thanpolas/server2js/blob/master/server2.js).
-
 
 ## Documentation
 ### Server API
 
-To interface with your JS codebase you need to create an **array of objects**. The objects need to contain two keys `nameId` and `value`. Then execute `ss.server()`.
+To interface with your JS codebase you need to create an **array of objects**. The objects need to contain two keys `op` and `val`. Then execute `ss.server()`. `op` stands for *operation*, a string to use when attaching hooks in JS. `val` is *value* and can be any type.
 
 ```javascript
 ss.server(serverDataObject [, moreToCome]);
@@ -29,9 +28,9 @@ Parameter `serverDataObject` can be an Array of objects, as mentioned above or a
 
 ```javascript
 var allData = [
-  {nameId: 'module1', value: {modId:1, conf:'stay'/* any type will do */}},
-  {nameId: 'module2', value: true},
-  {nameId: 'module1', value: {modId:2, conf:'go'}/* nameId can be duplicated */}
+  {op: 'operation1', val: {modId:1, conf:'stay'/* any type will do */}},
+  {op: 'operation2', val: true},
+  {op: 'operation1', val: {modId:2, conf:'go'}/* op can be used multiple times by the server */}
   ];
 // Pass your array to server2.js
 ss.server(allData);
@@ -57,13 +56,13 @@ This action, in effect, **destroys the instance**, making it totally unusable to
 Your modules can hook to server2.js using the `ss.server.hook()` method.
 
 ```javascript
-ss.server.hook(hookName, fn [,priority, onReady]);
+ss.server.hook(op, fn [,priority, onReady]);
 ```
 
 Example:
 
 ```javascript
-ss.server.hook('module1', function(data){
+ss.server.hook('operation1', function(data){
   if(1 == data.modId) {
     /* Do stuff */
   } else {
@@ -158,30 +157,30 @@ The html file as served by your server:
 
   [
     {
-      nameId: 'paintWorld',
-      value: {
+      op: 'paintWorld',
+      val: {
         elementId: 'helloWorld',
         elementValue: ' World'
       }
     },
     {
-      nameId: 'paintHello',
-      value: {
+      op: 'paintHello',
+      val: {
         elementId: 'helloWorld',
         elementValue: 'Hello'
       }
     },
     {
-      nameId: 'writeOutput',
-      value: true
+      op: 'writeOutput',
+      val: true
     },
     {
-      nameId: 'multiplier',
-      value: 10
+      op: 'multiplier',
+      val: 10
     },
     {
-      nameId: 'paintReadyExclamation',
-      value: {
+      op: 'paintReadyExclamation',
+      val: {
         elementId: 'helloWorld',
         elementValue: '!'
       }
