@@ -136,8 +136,8 @@ var iOnlyUseThisForTesting = ss.server.Server2jsClass();
 The order of loading the scripts matters.
 
   1. Load `server2.js` along with any other libs you use (jQuery, ...)
-  2. Your scripts. Attach to server2.js synchronously at this step (on the global context)
-  3. Server's call to `ss.server()` with all the **passed data objects** follows
+  2. Load your scripts. Attach to server2.js synchronously at this step (on the global context)
+  3. Server's call to `ss.server()` with all the **passed data objects**
   4. If you have onReady hooks, remember to trigger the [ready event](#the-ready-method) `ss.server.ready()`
 
 ## More Examples
