@@ -102,7 +102,7 @@ test('Core functionality', function() {
   s.hook('writeOutput', writeOutput);
   s.hook('paintWorld', paintWorld);
   s.hook('paintReadyExclamation', closingHookz, 1000);
-
+  console.log('hello world');
   s(getParams(true));
 
 });

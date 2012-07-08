@@ -26,6 +26,11 @@ goog.provide('ss.Server2js');
 goog.provide('ss.server2js');
 
 /**
+ * @define {boolean} we perform some hacks to reduce total size.
+ */
+ss.STANDALONE = true;
+
+/**
  * Server2js constructor
  *
  * @constructor
@@ -85,6 +90,77 @@ ss.Server2js = function()
 
 };
 
+if (ss.STANDALONE) {
+/**
+ * This is a stripped down version of goog.typeOf which only looks if
+ * a variable is an array and returns a boolean value.
+ *
+ * Purpose: Less minified bytes when in standalone mode
+ * @param {*} value The value to get the type of.
+ * @return {boolean} The name of the type.
+ */
+ss.server2js.isArray = function(value) {
+  var s = typeof value;
+  if (s != 'object' || !value) {
+    return false;
+  }
+  // Check these first, so we can avoid calling Object.prototype.toString if
+  // possible.
+  //
+  // IE improperly marshals tyepof across execution contexts, but a
+  // cross-context object will still return false for "instanceof Object".
+  if (value instanceof Array) {
+    return true;
+  } else if (value instanceof Object) {
+    return false;
+  }
+
+  // HACK: In order to use an Object prototype method on the arbitrary
+  //   value, the compiler requires the value be cast to type Object,
+  //   even though the ECMA spec explicitly allows it.
+  var className = Object.prototype.toString.call(
+      /** @type {Object} */ (value));
+  // In Firefox 3.6, attempting to access iframe window objects' length
+  // property throws an NS_ERROR_FAILURE, so we need to special-case it
+  // here.
+  if (className == '[object Array]') {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+  /**
+   * Shorter version of goog.bind()
+   *
+   * @param {Function} fn A function to partially apply.
+   * @param {Object|undefined} selfObj Specifies the object which |this| should
+   *     point to when the function is run.
+   * @return {!Function} A partially-applied form of the function bind() was
+   *     invoked as a method of.  goog.bind = function(fn, selfObj).
+   */
+  ss.server2js.bind = function(fn, selfObj)
+  {
+    if (arguments.length > 2) {
+      var boundArgs = Array.prototype.slice.call(arguments, 2);
+      return function() {
+        // Prepend the bound arguments to the current arguments.
+        var newArgs = Array.prototype.slice.call(arguments);
+        Array.prototype.unshift.apply(newArgs, boundArgs);
+        return fn.apply(selfObj, newArgs);
+      };
+
+    } else {
+      return function() {
+        return fn.apply(selfObj, arguments);
+      };
+    }
+  };
+} else {
+  ss.server2js.isArray = goog.isArray;
+  ss.server2js.bind = goog.bind;
+}
+
 /**
  * Add a custom getInstance static function
  * which uses ss.server2js.get()
@@ -131,11 +207,11 @@ ss.server2js.get = function()
   /** @type {ss.Server2js} */
   var server2jsInstance = new ss.Server2js();
   /** @type {function((Array|null|string), boolean=)} */
-  var capsule = goog.bind(server2jsInstance.run, server2jsInstance);
-  capsule['run'] = goog.bind(server2jsInstance.run, server2jsInstance);
-  capsule['hook'] = goog.bind(server2jsInstance.hook, server2jsInstance);
-  capsule['ready'] = goog.bind(server2jsInstance.ready, server2jsInstance);
-  capsule['dispose'] = goog.bind(server2jsInstance.dispose, server2jsInstance);
+  var capsule = ss.server2js.bind(server2jsInstance.run, server2jsInstance);
+  capsule['run'] = ss.server2js.bind(server2jsInstance.run, server2jsInstance);
+  capsule['hook'] = ss.server2js.bind(server2jsInstance.hook, server2jsInstance);
+  capsule['ready'] = ss.server2js.bind(server2jsInstance.ready, server2jsInstance);
+  capsule['dispose'] = ss.server2js.bind(server2jsInstance.dispose, server2jsInstance);
   return capsule;
 };
 
@@ -182,7 +258,7 @@ ss.Server2js.prototype._parseDataInput = function(dataInput)
 {
   /** @type {*?} */
   var input;
-  
+
   // check if we got a string (JSON)
   if ('string' == typeof dataInput) {
     /**
@@ -195,7 +271,7 @@ ss.Server2js.prototype._parseDataInput = function(dataInput)
     input = dataInput;
   }
 
-  if (!goog.isArray(input)) {
+  if (!ss.server2js.isArray(input)) {
     // not valid
     return;
   }
@@ -209,7 +285,7 @@ ss.Server2js.prototype._parseDataInput = function(dataInput)
     if (this._serverDataInput[op]) {
 
       // it's already set, check if array or object
-      if (goog.isArray(this._serverDataInput[op])) {
+      if (ss.server2js.isArray(this._serverDataInput[op])) {
 
         this._serverDataInput[op].push(input[i]);
 
@@ -409,7 +485,7 @@ ss.Server2js.prototype._sortFunc = function(a, b)
 ss.Server2js.prototype._runHook = function(hook, operation)
 {
   var dataObj = this._serverDataInput[operation];
-  if (goog.isArray(dataObj)) {
+  if (ss.server2js.isArray(dataObj)) {
     // multiple values
     for (var i = 0, l = dataObj.length; i < l; i++) {
       hook.fn(dataObj[i][ss.server2js.VALUE_KEY]);
