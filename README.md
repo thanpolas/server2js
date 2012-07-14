@@ -1,8 +1,26 @@
 # server2.js
 
-Server to JS is a hook based interface between your server and your JS application.
+Transfer data objects from server to javascript on page load.
 
-* **Tiny** server2.js is only 2,659 bytes (1,078 bytes gzipped).
+## Summary
+
+The scenario:
+
+1. Browser requests a page
+2. Server does its stuff, prepares a response and wants to **pass data** to JS on page load
+3. Server renders the page and [passes the data](#server-api) for javascript using `server2.js`
+4. Page is served to the browser
+6. Javascript initializes, `server2.js` kicks in and [passes the data](#the-hook-method) to the listeners
+
+On step 3, when your backend renders the view, all you need to do is:
+
+```javascript
+ss.server([{op: 'userAuthed', val: {id: 999, name: 'Jon' /** rest of your data object*/}}]);
+```
+
+**Server.js is:**
+
+* **Tiny** Only 1,944 bytes (858 bytes gzipped).
 * **Hook based** Hook and listen for server calls from anywhere in your JS application.
 * **Prioritized** Control the sequence of hook execution.
 * **Synchronous** Execution of hooks is synchronous. As soon as server passes the data object, hooks are executed! Fast!
@@ -11,7 +29,7 @@ Server to JS is a hook based interface between your server and your JS applicati
 
 ## Quick start
 
-[Get the latest version (1.1.2)](https://github.com/thanpolas/server2js/raw/master/dist/server2.min.js).
+[Get the latest version (1.1.3)](https://github.com/thanpolas/server2js/raw/master/dist/server2.min.js).
 
 [Or check out the source](https://github.com/thanpolas/server2js/blob/master/source/server2.js).
 
@@ -40,13 +58,13 @@ ss.server(allData);
 
 #### Beware of Disposing!
 
-By default we expect a single call to the `ss.server()` method. When that call is made, and after every attached hook has been executed, **server2.js automatically disposes** all it's internal references to data objects, in hopes of helping the JS Garbage Collector clean up. 
+By default we expect a single call to the `ss.server()` method. When that call is made, and after every attached hook has been executed, **server2.js automatically disposes** all it's internal references to data objects, in hopes of helping the JS Garbage Collector clean up.
 
 This action, in effect, **destroys the instance**, making it totally unusable to any further calls. There are two ways to avoid or circumvent this behavior:
 
   1. Set the second parameter (`moreToCome`) of the `ss.server()` method to `true`. This will instruct server2.js to not automatically dispose, and wait for additional hooks to attach or server calls to be made. In this case, be kind enough to call the [ss.server.dispose()](https://github.com/thanpolas/server2js#the-dispose-method) method when appropriate.
   2. Create a new server2.js instance. This solution is not really recommended, however [the ability exists](https://github.com/thanpolas/server2js#the-class).
-  
+
 **Important Note** When calling `ss.server()` multiple times, you have to use the `moreToCome` switch **every time** or automatic disposal will kick in!
 
 ### Javascript API
@@ -117,14 +135,14 @@ var iOnlyUseThisForTesting = ss.server.Server2jsClass();
 
 The order of loading the scripts matters.
 
-  1. First load `server2.js`
-  2. Then all your scripts
-  3. Last echo your server's Array and execute the `ss.server()`
-  4. If you have onReady hooks, remember to trigger the ready event `ss.server.ready()`
+  1. Load `server2.js` along with any other libs you use (jQuery, ...)
+  2. Load your scripts. Attach to server2.js synchronously at this step (on the global context)
+  3. Server's call to `ss.server()` with all the **passed data objects**
+  4. If you have onReady hooks, remember to trigger the [ready event](#the-ready-method) `ss.server.ready()`
 
 ## More Examples
 
-For more complex configurations check out [the tests](https://github.com/thanpolas/server2js/blob/master/test/unit/server2js.test.js). 
+For more complex configurations check out [the tests](https://github.com/thanpolas/server2js/blob/master/test/unit/server2js.test.js).
 
 ### Your html
 
@@ -331,3 +349,8 @@ awesome.controller.doMoreStuff = function(data)
   });
 })(jQuery);
 ```
+
+## License
+Copyright (c) 2012 Thanasis Polychronakis
+Licensed under the [APACHE2 license](http://www.apache.org/licenses/LICENSE-2.0).
+
