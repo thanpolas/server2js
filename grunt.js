@@ -16,14 +16,14 @@ module.exports = function(grunt)
     },
     closureCompiler: {
       target: {
-        closureCompiler: '../../closure-compiler/superstartup-compiler/build/sscompiler.jar',
+        closureCompiler: '../../closure-compiler/superstartup-compiler/build/ssdcompiler.jar',
         js: ['closure-library/closure/goog/base.js', 'source/server2js.export.js', 'source/server2.js'],
         output_file: 'dist/server2.min.js',
         options: {
           compilation_level: 'ADVANCED_OPTIMIZATIONS',
           warning_level: 'verbose',
           summary_detail_level: 3,
-          define: ["'goog.DEBUG=false'", "'ss.STANDALONE=true'"],
+          define: ["'goog.DEBUG=false'", "'ssd.STANDALONE=true'"],
           output_wrapper: '"(function(){%output%}).call(this);"',
           externs: 'build/json.extern.js'
         }
