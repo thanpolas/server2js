@@ -168,8 +168,8 @@ ss.server2js.isArray = function(value) {
  * @see ss.server2js.get
  * @return {ss.Server2js} -ish
  */
-ss.Server2js.getInstance = function() {
-  return ss.Server2js.instance_ || (ss.Server2js.instance_ = ss.server2js.get());
+ssd.Server2js.getInstance = function() {
+  return ssd.Server2js.instance_ || (ssd.Server2js.instance_ = ssd.server2js.getCapsule());
 };
 
 
@@ -202,7 +202,7 @@ ss.server2js.hookItem;
  * @see http://jsfiddle.net/thanpolas/zy9sy/14/
  * @return {function((Array|null|string), boolean=)}
  */
-ss.server2js.get = function()
+ssd.server2js.getCapsule = function()
 {
   /** @type {ss.Server2js} */
   var server2jsInstance = new ss.Server2js();
