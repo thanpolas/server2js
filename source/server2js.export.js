@@ -1,17 +1,17 @@
 // exports for server2.js
 
-goog.provide('ss.server');
-goog.require('ss.server2js');
-goog.require('ss.Server2js');
+goog.provide('ssd.server');
+goog.require('ssd.server2js');
+goog.require('ssd.Server2js');
 
 /**
- * @type {ss.Server2js}
+ * @type {ssd.Server2js}
  */
-ss.server = ss.Server2js.getInstance();
+ssd.server = ssd.Server2js.getInstance();
+ssd.server['run'] = ssd.server.run;
+ssd.server['hook'] = ssd.server.hook;
+ssd.server['ready'] = ssd.server.ready;
+ssd.server['dispose'] = ssd.server.dispose;
+ssd.server['Server2jsClass'] = ssd.server2js.get;
 
-goog.exportSymbol('ss.server', ss.server);
-goog.exportSymbol('ss.server.run', ss.server.run);
-goog.exportSymbol('ss.server.hook', ss.server.hook);
-goog.exportSymbol('ss.server.ready', ss.server.ready);
-goog.exportSymbol('ss.server.dispose', ss.server.dispose);
-goog.exportSymbol('ss.server.Server2jsClass', ss.server2js.get);
+goog.exportSymbol('ss.server', ssd.server);

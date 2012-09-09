@@ -1,4 +1,4 @@
-module('ss.server2js', {
+module('ssd.server2js', {
   setup: function(){
   },
   teardown: function() {
@@ -74,7 +74,7 @@ test('Core functionality', function() {
 
   stop();
 
-  var s = ss.server;
+  var s = ssd.server;
 
   function multiplier(data)
   {
@@ -112,7 +112,7 @@ test('Execution Priority and Ready event', function() {
 
   stop();
 
-  var server = ss.server.Server2jsClass();
+  var server = ssd.server.Server2jsClass();
 
   // priority tracker
   var sequence = 1;
@@ -181,7 +181,7 @@ test('More to come mode', function(){
 
   stop();
 
-  var server = ss.server.Server2jsClass();
+  var server = ssd.server.Server2jsClass();
 
   // priority tracker
   var sequence = 1;
@@ -331,7 +331,7 @@ test('Edge cases', function() {
 
   stop();
 
-  var server = ss.server.Server2jsClass();
+  var server = ssd.server.Server2jsClass();
 
   // priority tracker
   var sequence = 1;

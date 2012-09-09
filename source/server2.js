@@ -22,20 +22,20 @@
  *
  * @see https://github.com/thanpolas/server2js
  */
-goog.provide('ss.Server2js');
-goog.provide('ss.server2js');
+goog.provide('ssd.Server2js');
+goog.provide('ssd.server2js');
 
 /**
  * @define {boolean} we perform some hacks to reduce total size.
  */
-ss.STANDALONE = true;
+ssd.STANDALONE = true;
 
 /**
  * Server2js constructor
  *
  * @constructor
  */
-ss.Server2js = function()
+ssd.Server2js = function()
 {
   /**
    * @private
@@ -77,20 +77,20 @@ ss.Server2js = function()
   /**
    * All synchronous hooks are here
    * @private
-   * @type {Array.<ss.server2js.hookItem>}
+   * @type {Array.<ssd.server2js.hookItem>}
    */
   this._synchronousHooks = [];
 
   /**
    * All onReady hooks are here
    * @private
-   * @type {Array.<ss.server2js.hookItem>}
+   * @type {Array.<ssd.server2js.hookItem>}
    */
   this._readyHooks = [];
 
 };
 
-if (ss.STANDALONE) {
+if (ssd.STANDALONE) {
 /**
  * This is a stripped down version of goog.typeOf which only looks if
  * a variable is an array and returns a boolean value.
@@ -99,7 +99,7 @@ if (ss.STANDALONE) {
  * @param {*} value The value to get the type of.
  * @return {boolean} The name of the type.
  */
-ss.server2js.isArray = function(value) {
+ssd.server2js.isArray = function(value) {
   var s = typeof value;
   if (s != 'object' || !value) {
     return false;
@@ -139,7 +139,7 @@ ss.server2js.isArray = function(value) {
    * @return {!Function} A partially-applied form of the function bind() was
    *     invoked as a method of.  goog.bind = function(fn, selfObj).
    */
-  ss.server2js.bind = function(fn, selfObj)
+  ssd.server2js.bind = function(fn, selfObj)
   {
     if (arguments.length > 2) {
       var boundArgs = Array.prototype.slice.call(arguments, 2);
@@ -157,16 +157,16 @@ ss.server2js.isArray = function(value) {
     }
   };
 } else {
-  ss.server2js.isArray = goog.isArray;
-  ss.server2js.bind = goog.bind;
+  ssd.server2js.isArray = goog.isArray;
+  ssd.server2js.bind = goog.bind;
 }
 
 /**
  * Add a custom getInstance static function
- * which uses ss.server2js.get()
+ * which uses ssd.server2js.get()
  *
- * @see ss.server2js.get
- * @return {ss.Server2js} -ish
+ * @see ssd.server2js.get
+ * @return {ssd.Server2js} -ish
  */
 ssd.Server2js.getInstance = function() {
   return ssd.Server2js.instance_ || (ssd.Server2js.instance_ = ssd.server2js.getCapsule());
@@ -174,19 +174,19 @@ ssd.Server2js.getInstance = function() {
 
 
 /** @const {number} */
-ss.server2js.DEFAULT_PRIO = 100;
+ssd.server2js.DEFAULT_PRIO = 100;
 
 /** @const {string} */
-ss.server2js.OPERATION_KEY = 'op';
+ssd.server2js.OPERATION_KEY = 'op';
 
 /** @const {string} */
-ss.server2js.VALUE_KEY = 'val';
+ssd.server2js.VALUE_KEY = 'val';
 
 /**
  * Declare our internal hook type
  * @typedef {!Object.<string, function(*), number, ?boolean >}
  */
-ss.server2js.hookItem;
+ssd.server2js.hookItem;
 
 /**
  * HACK HACK HACK
@@ -196,7 +196,7 @@ ss.server2js.hookItem;
  * In our case, we want the instance to perform the .run() method
  * when executed. e.g.
  * <pre>
- * var server = ss.server2js.get();
+ * var server = ssd.server2js.get();
  * server === server.run; // true
  *
  * @see http://jsfiddle.net/thanpolas/zy9sy/14/
@@ -204,14 +204,14 @@ ss.server2js.hookItem;
  */
 ssd.server2js.getCapsule = function()
 {
-  /** @type {ss.Server2js} */
-  var server2jsInstance = new ss.Server2js();
+  /** @type {ssd.Server2js} */
+  var server2jsInstance = new ssd.Server2js();
   /** @type {function((Array|null|string), boolean=)} */
-  var capsule = ss.server2js.bind(server2jsInstance.run, server2jsInstance);
-  capsule['run'] = ss.server2js.bind(server2jsInstance.run, server2jsInstance);
-  capsule['hook'] = ss.server2js.bind(server2jsInstance.hook, server2jsInstance);
-  capsule['ready'] = ss.server2js.bind(server2jsInstance.ready, server2jsInstance);
-  capsule['dispose'] = ss.server2js.bind(server2jsInstance.dispose, server2jsInstance);
+  var capsule = ssd.server2js.bind(server2jsInstance.run, server2jsInstance);
+  capsule['run'] = ssd.server2js.bind(server2jsInstance.run, server2jsInstance);
+  capsule['hook'] = ssd.server2js.bind(server2jsInstance.hook, server2jsInstance);
+  capsule['ready'] = ssd.server2js.bind(server2jsInstance.ready, server2jsInstance);
+  capsule['dispose'] = ssd.server2js.bind(server2jsInstance.dispose, server2jsInstance);
   return capsule;
 };
 
@@ -224,7 +224,7 @@ ssd.server2js.getCapsule = function()
  *      or to cancel auto-disposing
  * @return {void}
  */
-ss.Server2js.prototype.run = function(dataInput, optMoreToCome)
+ssd.Server2js.prototype.run = function(dataInput, optMoreToCome)
 {
 
   this._parseDataInput(dataInput);
@@ -254,7 +254,7 @@ ss.Server2js.prototype.run = function(dataInput, optMoreToCome)
  * @param {Array|string} dataInput
  * @return {void}
  */
-ss.Server2js.prototype._parseDataInput = function(dataInput)
+ssd.Server2js.prototype._parseDataInput = function(dataInput)
 {
   /** @type {*?} */
   var input;
@@ -271,7 +271,7 @@ ss.Server2js.prototype._parseDataInput = function(dataInput)
     input = dataInput;
   }
 
-  if (!ss.server2js.isArray(input)) {
+  if (!ssd.server2js.isArray(input)) {
     // not valid
     return;
   }
@@ -279,13 +279,13 @@ ss.Server2js.prototype._parseDataInput = function(dataInput)
   // loop through the operations and assign by key to our data object
   for (var i = 0, l = input.length; i < l; i++) {
     // get operation name
-    var op = input[i][ss.server2js.OPERATION_KEY];
+    var op = input[i][ssd.server2js.OPERATION_KEY];
 
     // check if already set
     if (this._serverDataInput[op]) {
 
       // it's already set, check if array or object
-      if (ss.server2js.isArray(this._serverDataInput[op])) {
+      if (ssd.server2js.isArray(this._serverDataInput[op])) {
 
         this._serverDataInput[op].push(input[i]);
 
@@ -322,13 +322,13 @@ ss.Server2js.prototype._parseDataInput = function(dataInput)
  *              should be fired by executing the ready() method
  * @return {void}
  */
-ss.Server2js.prototype.hook = function(op, fn, opt_prio, opt_onReady)
+ssd.Server2js.prototype.hook = function(op, fn, opt_prio, opt_onReady)
 {
-  /** @type {ss.server2js.hookItem} */
+  /** @type {ssd.server2js.hookItem} */
   var hook = {
     op: op,
     fn: fn,
-    prio: opt_prio || ss.server2js.DEFAULT_PRIO,
+    prio: opt_prio || ssd.server2js.DEFAULT_PRIO,
     ready: opt_onReady
   };
 
@@ -357,7 +357,7 @@ ss.Server2js.prototype.hook = function(op, fn, opt_prio, opt_onReady)
  *
  * @return {void}
  */
-ss.Server2js.prototype.ready = function()
+ssd.Server2js.prototype.ready = function()
 {
   // no need to do anything if ready event was triggered
   if (this._readyFired) {
@@ -380,7 +380,7 @@ ss.Server2js.prototype.ready = function()
  *
  * @return {boolean} true if we disposed
  */
-ss.Server2js.prototype.dispose = function()
+ssd.Server2js.prototype.dispose = function()
 {
   return this._dispose(true);
 };
@@ -396,7 +396,7 @@ ss.Server2js.prototype.dispose = function()
  * @param {boolean=} opt_override override the moreToCome state
  * @return {boolean}
  */
-ss.Server2js.prototype._dispose = function (opt_override)
+ssd.Server2js.prototype._dispose = function (opt_override)
 {
   // check if in moreToCome state and no override
   if (!opt_override && this._moreToCome) {
@@ -427,9 +427,9 @@ ss.Server2js.prototype._dispose = function (opt_override)
  * @param {boolean} isSynch
  * @return {void}
  */
-ss.Server2js.prototype._runHooks = function(isSynch)
+ssd.Server2js.prototype._runHooks = function(isSynch)
 {
-  /** @type {Array.<ss.server2js.hookItem>} */
+  /** @type {Array.<ssd.server2js.hookItem>} */
   var hooks = (isSynch ? this._synchronousHooks : this._readyHooks);
 
   // sort all hooks in reverse order based on their prio
@@ -440,7 +440,7 @@ ss.Server2js.prototype._runHooks = function(isSynch)
   var foundIn = [];
   // iterate over all hooks
   while(i--) {
-    /** @type {ss.server2js.hookItem} */
+    /** @type {ssd.server2js.hookItem} */
     var hook = hooks[i];
     /** @type {string} get operation name */
     var op = hook.op;
@@ -462,11 +462,11 @@ ss.Server2js.prototype._runHooks = function(isSynch)
  * Our hook sorting method
  * We reverse sort them so we can run from end to start
  * @private
- * @param {ss.server2js.hookItem} a
- * @param {ss.server2js.hookItem} b
+ * @param {ssd.server2js.hookItem} a
+ * @param {ssd.server2js.hookItem} b
  * @return {boolean}
  */
-ss.Server2js.prototype._sortFunc = function(a, b)
+ssd.Server2js.prototype._sortFunc = function(a, b)
 {
   return a.prio < b.prio;
 };
@@ -478,20 +478,20 @@ ss.Server2js.prototype._sortFunc = function(a, b)
  * After execution, remove the server values
  *
  * @private
- * @param {ss.server2js.hookItem} hook
+ * @param {ssd.server2js.hookItem} hook
  * @param {string} operation The operation to execute
  * @return {void}
  */
-ss.Server2js.prototype._runHook = function(hook, operation)
+ssd.Server2js.prototype._runHook = function(hook, operation)
 {
   var dataObj = this._serverDataInput[operation];
-  if (ss.server2js.isArray(dataObj)) {
+  if (ssd.server2js.isArray(dataObj)) {
     // multiple values
     for (var i = 0, l = dataObj.length; i < l; i++) {
-      hook.fn(dataObj[i][ss.server2js.VALUE_KEY]);
+      hook.fn(dataObj[i][ssd.server2js.VALUE_KEY]);
     }
   } else {
-    hook.fn(dataObj[ss.server2js.VALUE_KEY]);
+    hook.fn(dataObj[ssd.server2js.VALUE_KEY]);
   }
 
   // remove the server key
