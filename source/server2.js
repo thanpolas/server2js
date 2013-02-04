@@ -25,6 +25,8 @@
 goog.provide('ss.Server2js');
 goog.provide('ss.server2js');
 
+goog.require('goog.string');
+
 /**
  * @define {boolean} we perform some hacks to reduce total size.
  */
@@ -101,7 +103,7 @@ if (ss.STANDALONE) {
  */
 ss.server2js.isArray = function(value) {
   var s = typeof value;
-  if (s != 'object' || !value) {
+  if (s !== 'object' || !value) {
     return false;
   }
   // Check these first, so we can avoid calling Object.prototype.toString if
@@ -123,7 +125,7 @@ ss.server2js.isArray = function(value) {
   // In Firefox 3.6, attempting to access iframe window objects' length
   // property throws an NS_ERROR_FAILURE, so we need to special-case it
   // here.
-  if (className == '[object Array]') {
+  if (className === '[object Array]') {
     return true;
   } else {
     return false;
@@ -247,29 +249,18 @@ ss.Server2js.prototype.run = function(dataInput, optMoreToCome)
 };
 
 /**
- * Will check data input if is an array or string
- * type and return proper dataInput type
+ * Will parse the incoming string. Unescape htmlentities
+ * and json parse.
  *
  * @private
- * @param {Array|string} dataInput
+ * @param {string} dataInput
  * @return {void}
  */
 ss.Server2js.prototype._parseDataInput = function(dataInput)
 {
-  /** @type {*?} */
-  var input;
-
-  // check if we got a string (JSON)
-  if ('string' == typeof dataInput) {
-    /**
-     * it's a string, we assume JSON encoded
-     * parse it without a try catch statement so of an exception
-     * occurs it will get bubbled up
-     */
-    input = JSON.parse(dataInput);
-  } else {
-    input = dataInput;
-  }
+  /** @type {*} */
+  var input = goog.string.unescapeEntities(dataInput);
+  input = JSON.parse(dataInput);
 
   if (!ss.server2js.isArray(input)) {
     // not valid
