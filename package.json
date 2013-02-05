@@ -5,7 +5,7 @@
   },
   "name": "server2js",
   "description": "Transfer data objects from server to javascript on page load. ",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "homepage": "https://github.com/thanpolas/server2js",
   "repository": {
     "type": "git",
