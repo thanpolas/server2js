@@ -19,7 +19,7 @@ test('Data can be defined before hooks', function() {
     strictEqual(data, 10, 'numeric value hook');
   }
   function writeOutput(data) {
-    strictEqual(true, data, 'boolean value hook');
+    strictEqual(data, true, 'boolean value hook');
   }
   function paintWorld(data) {
     equal(data.elementId, 'helloWorld', 'object containing string value hook key 1');
@@ -52,5 +52,21 @@ test('Malicious code gets passed intact', function() {
   }
 
   s.hook('malicious', malicious);
+
+});
+
+test('Proper decoding of passed data', function() {
+
+  expect( 2 );
+  var server2js = ss.server.Server2jsClass();
+
+  server2js(exports.jsonEnc);
+
+  server2js.hook('scriptTag', function(data) {
+    equal(data, '<script>eval("\'evil!\'");</script>', 'Checking script tag integrity');
+  });
+  server2js.hook('oddCase', function(data) {
+    equal(data, 'a single \' quote to mark " and "" and "" a back \\ run', 'oddcase with various quotes');
+  });
 
 });

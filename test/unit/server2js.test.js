@@ -66,7 +66,21 @@ var ParamsFixture = function()
  */
 var getParams = function()
 {
-  return goog.string.htmlEscape(JSON.stringify(new ParamsFixture()));
+  return encodeParams(new ParamsFixture());
+};
+
+var encodeParams = function(arrayData) {
+  var fixture = arrayData,
+      properFixture = [];
+  for (var i = 0, len = fixture.length; i < len ; i++) {
+    var val = JSON.stringify(fixture[i].val);
+    val = goog.string.htmlEscape(val);
+    properFixture.push({
+      op: fixture[i].op,
+      val: val
+    });
+  }
+  return JSON.stringify(properFixture);
 };
 
 
@@ -286,12 +300,11 @@ test('More to come mode', function(){
   server.run(getParams(true));
 
   // now call server with a few additional instructions
-  var moreInstructs = [
+  var moreInstructs = encodeParams([
     {op: 'eagerLoaded', val: 'fun'},
     {op: 'lazyLoaded', val: 'more fun'},
     {op: 'lazyLoadedReady', val: 'and more fun'}
-  ];
-  moreInstructs = goog.string.htmlEscape(JSON.stringify(moreInstructs));
+  ]);
   server.run(moreInstructs, true);
 
   // lazily attach hooks
@@ -303,13 +316,12 @@ test('More to come mode', function(){
   server.ready();
 
   // now call server with a few additional instructions
-  moreInstructs = [
+  var evenMoreInstructs = encodeParams([
     {op: 'eagerFoo', val: 'foo fun'},
     {op: 'eagerFooReady', val: 'poo fun'},
     {op: 'lazyFooReady', val: 'lazy poo fun'}
-  ];
-  moreInstructs = goog.string.htmlEscape(JSON.stringify(moreInstructs));
-  server(moreInstructs, true);
+  ]);
+  server(evenMoreInstructs, true);
 
   server.hook('lazyFooReady', lazyFooReady, 1, true);
 
