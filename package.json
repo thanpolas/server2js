@@ -16,9 +16,11 @@
     "node": "~0.8"
   },
   "dependencies": {
+    "validator": "0.4.23"
   },
   "devDependencies": {
-    "grunt-closure-tools": "0.6.12"
+    "grunt-closure-tools": "0.6.12",
+    "grunt-contrib-watch": "0.1.4"
   }
 
 }

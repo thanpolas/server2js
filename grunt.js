@@ -1,7 +1,10 @@
+
 module.exports = function(grunt)
 {
 
   grunt.loadNpmTasks('grunt-closure-tools');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+
   //grunt.loadTasks('closure-tools/tasks');
   // Project configuration.
   grunt.initConfig({
@@ -35,7 +38,16 @@ module.exports = function(grunt)
     },
 		qunit: {
 			files: "test/index.html"
-		}
+		},
+    test: {
+      all: ['test/node/**/*.js']
+    },
+    watch: {
+      test: {
+        files: ['node/**/*.js', 'test/node/**/*.js'],
+        tasks: 'test'
+      }
+    }
   });
 
   // Default task.
