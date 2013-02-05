@@ -5,26 +5,22 @@ module.exports = function(grunt)
   //grunt.loadTasks('closure-tools/tasks');
   // Project configuration.
   grunt.initConfig({
-    closureBuilder: {
-      build: {
-        closureLibraryPath: 'closure-library',
-        inputs: ['source/server2js.export.js'],
-        output_file: 'build/server2js.concatenated.js',
-        root: ['source/', 'closure-library/'],
-        output_mode: 'script'
-      }
-    },
+    // closureBuilder not used on purpose.
     closureCompiler: {
       target: {
         closureCompiler: '../../closure-compiler/superstartup-compiler/build/sscompiler.jar',
-        js: ['closure-library/closure/goog/base.js', 'source/server2js.export.js', 'source/server2.js'],
+        js: [
+          'closure-library/closure/goog/base.js',
+          'lib/server2js.export.js',
+          'lib/server2.js'
+          ],
         output_file: 'dist/server2.min.js',
         options: {
           compilation_level: 'ADVANCED_OPTIMIZATIONS',
           warning_level: 'verbose',
           summary_detail_level: 3,
           define: ["'goog.DEBUG=false'", "'ss.STANDALONE=true'"],
-          output_wrapper: '"(function(){%output%}).call(this);"',
+          output_wrapper: '"!function(){%output%}.call(this);"',
           externs: 'build/json.extern.js'
         }
       }

@@ -1,3 +1,5 @@
+goog.require('goog.string');
+
 module('ss.server2js', {
   setup: function(){
   },
@@ -32,6 +34,10 @@ var ParamsFixture = function()
       }
     },
     {
+      op: 'malicious',
+      val: 'Hello^2 <script src=""></script>'
+    },
+    {
       op: 'writeOutput',
       val: true
     },
@@ -54,18 +60,13 @@ var ParamsFixture = function()
 };
 
 /**
- * Get the params fixture array
+ * Get the params fixture array in a JSON encoded string
  *
- * @param {boolean=} opt_JSON set to true to get a JSON string
- * @return {Array|string}
+ * @return {string}
  */
-var getParams = function(opt_JSON)
+var getParams = function()
 {
-  if (opt_JSON) {
-    return JSON.stringify(new ParamsFixture());
-  } else {
-    return new ParamsFixture();
-  }
+  return goog.string.htmlEscape(JSON.stringify(new ParamsFixture()));
 };
 
 
@@ -76,34 +77,26 @@ test('Core functionality', function() {
 
   var s = ss.server;
 
-  function multiplier(data)
-  {
+  function multiplier(data) {
     strictEqual(data, 10, 'numeric value hook');
   }
-
-  function writeOutput(data)
-  {
+  function writeOutput(data) {
     strictEqual(true, data, 'boolean value hook');
   }
-
-  function paintWorld(data)
-  {
+  function paintWorld(data) {
     equal(data.elementId, 'helloWorld', 'object containing string value hook key 1');
     equal(data.elementValue, ' World', 'object containing string value hook key 2');
   }
-  function closingHookz(data)
-  {
+  function closingHookz(data) {
     equal(data.elementValue, '!', 'object containing string value hook key 3');
     start();
-
   }
 
   s.hook('multiplier', multiplier);
   s.hook('writeOutput', writeOutput);
   s.hook('paintWorld', paintWorld);
   s.hook('paintReadyExclamation', closingHookz, 1000);
-  console.log('hello world');
-  s(getParams(true));
+  s(getParams(), true);
 
 });
 
@@ -119,24 +112,21 @@ test('Execution Priority and Ready event', function() {
   // ready fired
   var ready = false;
 
-  function multiplier(data)
-  {
+  function multiplier(data) {
     strictEqual(data, 10, 'numeric value hook');
     equal(sequence, 3, 'Our execution sequence should be 3');
     ok(!ready, 'Ready should not be true');
     sequence++;
   }
 
-  function writeOutput(data)
-  {
+  function writeOutput(data) {
     strictEqual(data, true, 'boolean value hook');
     equal(sequence, 1, 'Our execution sequence should be 1');
     ok(!ready, 'Ready should not be true');
     sequence++;
   }
 
-  function paintWorld(data)
-  {
+  function paintWorld(data) {
     equal(data.elementId, 'helloWorld', 'object containing string value hook key 1');
     equal(data.elementValue, ' World', 'object containing string value hook key 2');
     equal(sequence, 2, 'Our execution sequence should be 2');
@@ -144,8 +134,7 @@ test('Execution Priority and Ready event', function() {
     sequence++;
   }
 
-  function closingHook(data)
-  {
+  function closingHook(data) {
     equal(data.elementValue, '!', 'object containing string value hook key 3');
     equal(sequence, 5, 'Our execution sequence should be 5');
     ok(ready, 'Ready should be true');
@@ -153,8 +142,7 @@ test('Execution Priority and Ready event', function() {
 
   }
 
-  function fireWhenReady(data)
-  {
+  function fireWhenReady(data) {
     equal(data.join('-'), '5-6-7', 'Array of numbers value hook');
     equal(sequence, 4, 'Our execution sequence should be 4');
     ok(ready, 'Ready should be true');
@@ -167,7 +155,7 @@ test('Execution Priority and Ready event', function() {
   server.hook('paintReadyExclamation', closingHook, 10, true);
   server.hook('fireWhenReady', fireWhenReady, 2, true);
 
-  server.run(getParams(true));
+  server.run(getParams(true), true);
 
   // trigger ready event
   ready = true;
@@ -295,14 +283,16 @@ test('More to come mode', function(){
   server.hook('eagerFooReady', eagerFooReady, 15, true);
 
   // run run run
-  server.run(getParams(true), true);
+  server.run(getParams(true));
 
   // now call server with a few additional instructions
-  server.run([
+  var moreInstructs = [
     {op: 'eagerLoaded', val: 'fun'},
     {op: 'lazyLoaded', val: 'more fun'},
     {op: 'lazyLoadedReady', val: 'and more fun'}
-  ], true);
+  ];
+  moreInstructs = goog.string.htmlEscape(JSON.stringify(moreInstructs));
+  server.run(moreInstructs, true);
 
   // lazily attach hooks
   server.hook('lazyLoaded', lazyLoaded);
@@ -313,11 +303,13 @@ test('More to come mode', function(){
   server.ready();
 
   // now call server with a few additional instructions
-  server([
+  moreInstructs = [
     {op: 'eagerFoo', val: 'foo fun'},
     {op: 'eagerFooReady', val: 'poo fun'},
     {op: 'lazyFooReady', val: 'lazy poo fun'}
-  ], true);
+  ];
+  moreInstructs = goog.string.htmlEscape(JSON.stringify(moreInstructs));
+  server(moreInstructs, true);
 
   server.hook('lazyFooReady', lazyFooReady, 1, true);
 
@@ -355,7 +347,7 @@ test('Edge cases', function() {
     sequence++;
   }
 
-  function falseFunc(data)
+  function falseFunc()
   {
     ok(false, 'falseFunc function should never be called');
     start();
@@ -394,7 +386,7 @@ test('Edge cases', function() {
   server.hook('fireWhenReady', falseFunc, 2, true);
 
   // use native array and alias name
-  server(getParams());
+  server(getParams(), true);
   // when .ready() has not executed, while we have ready hooks
   // auto-dispose will not happen...
   ok(server.dispose(), 'dispose should return true');
