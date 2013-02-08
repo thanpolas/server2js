@@ -36,7 +36,7 @@ exports.clear = function(req) {
  * @param {*} data any type of data.
  */
 exports.add = function(req, operation, data) {
-  initSpace();
+  initSpace(req);
   var jsonData = JSON.stringify(data);
   var encData = gString.htmlEscape(jsonData);
   req[storeSpace].queue.push({op: operation, val: encData});
