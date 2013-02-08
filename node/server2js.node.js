@@ -1,59 +1,66 @@
 
 var gString = require('./goog.string');
 
-var queue = [];
-// store the final encoded string without ceremony.
-var encString = '';
+var storeSpace = '__server2js';
+
+/**
+ * Initializes the namespace inside the req data object.
+ * @param  {Object} req The data object.
+ */
+function initSpace(req) {
+  if ( req[storeSpace] ) {
+    return;
+  }
+  req[storeSpace] = {
+    queue: [],
+    encString: ''
+  };
+}
 
 /**
  * Clear the internal buffer.
+ * @param {Object} req the req object to store data.
  */
-exports.clear = function() {
-  queue = [];
-  encString = '';
+exports.clear = function(req) {
+  initSpace(req);
+  req[storeSpace].queue = [];
+  req[storeSpace].encString = '';
 };
-
-/**
- * Encodes the string or returns the already encoded one
- * @return {string} [description]
- */
-function getEncString () {
-  if ('' !== encString) {
-    return encString;
-  }
-  if (0 === queue.length) {
-    return '';
-  }
-  encString = JSON.stringify(queue);
-  return encString;
-}
 
 /**
  * Add an operation and data to be passed to JS at page load.
  *
+ * @param {Object} req The request object. Can be any object, will use
+ *   to store the data in.
  * @param {string} operation The operation.
  * @param {*} data any type of data.
  */
-exports.add = function(operation, data) {
+exports.add = function(req, operation, data) {
+  initSpace();
   var jsonData = JSON.stringify(data);
   var encData = gString.htmlEscape(jsonData);
-  queue.push({op: operation, val: encData});
+  req[storeSpace].queue.push({op: operation, val: encData});
   // reset encString
-  encString = '';
+  req[storeSpace].encString = '';
 };
 
 /**
- * Return the snippet wrapped in script tags
- * @param  {boolean=} optAutoDispose Optinally define if we want
- *   auto dispose flag enabled.
- * @return {string} sanitized string including script tags
- *   to be appended to the document.
+ * Encodes the string or returns the already encoded one
+ * @param  {Object} req [description]
+ * @return {string} [description]
  */
-exports.getScript = function(optAutoDispose) {
-  var _snippet = exports.getSnippet(optAutoDispose);
-  var out = '<script type="text/javascript">' + _snippet + '</script>';
-  return out;
+exports.getEncString = function(req) {
+  initSpace(req);
+  if ('' !== req[storeSpace].encString) {
+    return req[storeSpace].encString;
+  }
+  if (0 === req[storeSpace].queue.length) {
+    return '';
+  }
+  req[storeSpace].encString = JSON.stringify(req[storeSpace].queue);
+  return req[storeSpace].encString;
 };
+
 
 /**
  * Get the data to be passed to the JS app in a properly
@@ -65,9 +72,9 @@ exports.getScript = function(optAutoDispose) {
  *   auto dispose flag enabled.
  * @return {string} sanitized string to be appended to the document.
  */
-exports.getSnippet = function(optAutoDispose) {
+exports.getSnippet = function(req, optAutoDispose) {
 
-  var _encString = exports.getString();
+  var _encString = exports.getEncString(req);
 
   var out = '// <![CDATA[\n';
   out += 'ss.server(\'' + _encString + '\'';
@@ -80,10 +87,18 @@ exports.getSnippet = function(optAutoDispose) {
   return out;
 };
 
+
 /**
- * @return {string} The encoded string bare.
+ * Return the snippet wrapped in script tags
+ * @param  {Object} req            [description]
+ * @param  {boolean=} optAutoDispose Optinally define if we want
+ *   auto dispose flag enabled.
+ * @return {string} sanitized string including script tags
+ *   to be appended to the document.
  */
-exports.getString = function() {
-  return getEncString();
+exports.getScript = function(req, optAutoDispose) {
+  var _snippet = exports.getSnippet(optAutoDispose);
+  var out = '<script type="text/javascript">' + _snippet + '</script>';
+  return out;
 };
 
