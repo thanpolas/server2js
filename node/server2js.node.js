@@ -13,6 +13,7 @@ function initSpace(req) {
   }
   req[storeSpace] = {
     queue: [],
+    hash: {},
     encString: ''
   };
 }
@@ -24,6 +25,7 @@ function initSpace(req) {
 exports.clear = function(req) {
   initSpace(req);
   req[storeSpace].queue = [];
+  req[storeSpace].hash = {};
   req[storeSpace].encString = '';
 };
 
@@ -40,6 +42,7 @@ exports.add = function(req, operation, data) {
   var jsonData = JSON.stringify(data);
   var encData = gString.htmlEscape(jsonData);
   req[storeSpace].queue.push({op: operation, val: encData});
+  req[storeSpace].hash[operation] = data;
   // reset encString
   req[storeSpace].encString = '';
 };
@@ -55,7 +58,7 @@ exports.add = function(req, operation, data) {
 exports.get = function(req, operation) {
   initSpace(req);
 
-  return req[operation];
+  return req[storeSpace].hash[operation];
 };
 
 /**
