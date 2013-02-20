@@ -45,6 +45,20 @@ exports.add = function(req, operation, data) {
 };
 
 /**
+ * get an operation's data, raw (as defined)
+ *
+ * @param {Object} req The request object. Can be any object, will use
+ *   to store the data in.
+ * @param {string} operation The operation.
+ * @return {*} any value stored.
+ */
+exports.get = function(req, operation) {
+  initSpace(req);
+
+  return req[operation];
+};
+
+/**
  * Encodes the string or returns the already encoded one
  * @param  {Object} req [description]
  * @return {string} [description]

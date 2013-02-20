@@ -389,6 +389,9 @@ awesome.controller.doMoreStuff = function(data)
 ```
 
 ## Release History
+- **v0.2.6**, *20 February 2013*
+  - Added `get` method in the node API.
+  - Several bug fixes on node API.
 
 - **v0.2.1**, *05 February 2013*
   - New frontend API. Allows for declaration of server data object before hooks attach.
