@@ -50,7 +50,12 @@ module.exports = function(grunt)
       test: {
         files: ['lib/**/*.js', 'test/node/**/*.js'],
         tasks: 'test'
+      },
+      web: {
+        files: ['src/**/*.js', 'test/unit/**/*.js'],
+        tasks: 'test:web'
       }
+
     }
   });
 
