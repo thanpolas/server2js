@@ -2,6 +2,8 @@
 
 Transfer data objects from server to javascript on page load.
 
+[![Build Status](https://travis-ci.org/thanpolas/server2js.png?branch=master)](https://travis-ci.org/thanpolas/server2js)
+
 ## Summary
 
 The scenario:
@@ -389,7 +391,7 @@ awesome.controller.doMoreStuff = function(data)
 ```
 
 ## Release History
-- **v0.2.7**, *20 February 2013*
+- **v0.2.10**, *20 February 2013*
   - Added `get` method in the node API.
   - Several bug fixes on node API.
 
