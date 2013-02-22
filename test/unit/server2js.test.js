@@ -134,7 +134,6 @@ test('Execution Priority and Ready event', function() {
   }
 
   function writeOutput(data) {
-    console.log('WRITE TRUE TRUE TRUE');
     strictEqual(data, true, 'boolean value hook');
     equal(sequence, 1, 'Our execution sequence should be 1');
     ok(!ready, 'Ready should not be true');
@@ -143,7 +142,6 @@ test('Execution Priority and Ready event', function() {
   }
 
   function paintWorld(data) {
-    console.log('\n\n paintWorld seq', sequence);
     equal(data.elementId, 'helloWorld', 'object containing string value hook key 1');
     equal(data.elementValue, ' World', 'object containing string value hook key 2');
     equal(sequence, 2, 'Our execution sequence should be 2');

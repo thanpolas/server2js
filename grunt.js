@@ -81,7 +81,10 @@ module.exports = function(grunt)
         grunt.task.run(webTest);
       break;
       default:
-        grunt.task.run(webTest);
+        // Not working on phantomJs (!) see:
+        // https://groups.google.com/forum/?fromgroups=#!topic/phantomjs/7wi5PXFWG78
+        //
+        // grunt.task.run(webTest);
         grunt.task.run(nodeTest);
       break;
     }

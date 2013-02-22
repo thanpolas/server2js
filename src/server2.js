@@ -25,6 +25,8 @@
 goog.provide('ss.Server2js');
 goog.provide('ss.server2js');
 
+goog.require('goog.debug');
+
 /**
  * @define {boolean} we perform some hacks to reduce total size.
  */
@@ -179,7 +181,7 @@ ss.server2js.isArray = function(value) {
         return value;
       }
       // Check for numeric entity.
-      if (entity.charAt(0) == '#') {
+      if (entity.charAt(0) === '#') {
         // Prefix with 0 so that hex entities (e.g. &#x10) parse as hex numbers.
         var n = Number('0' + entity.substr(1));
         if (!isNaN(n)) {
@@ -377,6 +379,7 @@ ss.Server2js.prototype.hook = function(op, fn, opt_prio, opt_onReady)
   if (this._disposed){
     throw new Error('server2js has been disposed');
   }
+
   /** @type {ss.server2js.hookItem} */
   var hook = {
     op: op,
@@ -484,9 +487,11 @@ ss.Server2js.prototype._runHooks = function(isSynch)
 {
   /** @type {Array.<ss.server2js.hookItem>} */
   var hooks = (isSynch ? this._synchronousHooks : this._readyHooks);
+  hooks = Array.prototype.slice.call(hooks, 0);
 
   // sort all hooks in reverse order based on their prio
   Array.prototype.sort.call(hooks, this._sortFunc);
+
   /** @type {number} */
   var i = hooks.length;
   /** @type {Array} store indexes of executed hooks for delition */
