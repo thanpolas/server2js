@@ -42,7 +42,7 @@ exports.add = function(req, operation, data) {
   var jsonData = JSON.stringify(data);
   var encData = gString.htmlEscape(jsonData);
   // escape single quotes
-  var escaped = encData.replace("'", "\\'");
+  var escaped = encData.replace("'", "\'");
   req[storeSpace].queue.push({op: operation, val: escaped});
   req[storeSpace].hash[operation] = data;
   // reset encString
