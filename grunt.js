@@ -37,9 +37,13 @@ module.exports = function(grunt)
       }
     },
 		qunit: {
-			files: "test/index.html"
+			all: ['http://localhost:8888/test/index.html?testNumber=2']
 		},
-    test: {
+    server: {
+      port: 8888,
+      base: '.'
+    },
+    nodeTest: {
       all: ['test/node/**/*.js']
     },
     watch: {
@@ -50,6 +54,35 @@ module.exports = function(grunt)
     }
   });
 
+
+  grunt.renameTask('test', 'nodeTest');
+
+  grunt.registerTask('test', 'Test all or specific targets', function(target) {
+    var nodeTest = [
+      'nodeTest:all'
+    ];
+
+    var webTest = [
+      'server',
+      'qunit:all'
+    ];
+
+    //return;
+    switch( target ) {
+      case 'node':
+        grunt.task.run(nodeTest);
+      break;
+      case 'web':
+        grunt.task.run(webTest);
+      break;
+      default:
+        grunt.task.run(webTest);
+        grunt.task.run(nodeTest);
+      break;
+    }
+
+  });
+
   // Default task.
-  grunt.registerTask('default', 'closureCompiler');
+  grunt.registerTask('default', 'test');
 };

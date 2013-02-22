@@ -41,9 +41,7 @@ exports.add = function(req, operation, data) {
   initSpace(req);
   var jsonData = JSON.stringify(data);
   var encData = gString.htmlEscape(jsonData);
-  // escape single quotes
-  var escaped = encData.replace("'", "\'");
-  req[storeSpace].queue.push({op: operation, val: escaped});
+  req[storeSpace].queue.push({op: operation, val: encData});
   req[storeSpace].hash[operation] = data;
   // reset encString
   req[storeSpace].encString = '';
@@ -116,7 +114,7 @@ exports.getSnippet = function(req, optAutoDispose) {
  *   to be appended to the document.
  */
 exports.getScript = function(req, optAutoDispose) {
-  var _snippet = exports.getSnippet(optAutoDispose);
+  var _snippet = exports.getSnippet(req, optAutoDispose);
   var out = '<script type="text/javascript">' + _snippet + '</script>';
   return out;
 };

@@ -134,13 +134,16 @@ test('Execution Priority and Ready event', function() {
   }
 
   function writeOutput(data) {
+    console.log('WRITE TRUE TRUE TRUE');
     strictEqual(data, true, 'boolean value hook');
     equal(sequence, 1, 'Our execution sequence should be 1');
     ok(!ready, 'Ready should not be true');
     sequence++;
+    console.log('\n\nWRITE seq seq', sequence);
   }
 
   function paintWorld(data) {
+    console.log('\n\n paintWorld seq', sequence);
     equal(data.elementId, 'helloWorld', 'object containing string value hook key 1');
     equal(data.elementValue, ' World', 'object containing string value hook key 2');
     equal(sequence, 2, 'Our execution sequence should be 2');
@@ -169,7 +172,7 @@ test('Execution Priority and Ready event', function() {
   server.hook('paintReadyExclamation', closingHook, 10, true);
   server.hook('fireWhenReady', fireWhenReady, 2, true);
 
-  server.run(getParams(true), true);
+  server.run(getParams(), true);
 
   // trigger ready event
   ready = true;

@@ -18,6 +18,7 @@
   "dependencies": {
   },
   "devDependencies": {
+    "grunt": "0.3.16",
     "grunt-closure-tools": "0.6.12",
     "grunt-contrib-watch": "0.1.4"
   }
