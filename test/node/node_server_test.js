@@ -1,4 +1,4 @@
-var server2js = require('../../node/server2js.node');
+var server2js = require('../../lib/server2js.node');
 
 var fixtures = require('../fixtures/dataObjects.fixture');
 
