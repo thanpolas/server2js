@@ -14,8 +14,8 @@ module.exports = function(grunt)
         closureCompiler: '../../closure-compiler/superstartup-compiler/build/sscompiler.jar',
         js: [
           'closure-library/closure/goog/base.js',
-          'lib/server2js.export.js',
-          'lib/server2.js'
+          'src/server2js.export.js',
+          'src/server2.js'
           ],
         output_file: 'dist/server2.min.js',
         options: {
@@ -48,7 +48,7 @@ module.exports = function(grunt)
     },
     watch: {
       test: {
-        files: ['node/**/*.js', 'test/node/**/*.js'],
+        files: ['lib/**/*.js', 'test/node/**/*.js'],
         tasks: 'test'
       }
     }

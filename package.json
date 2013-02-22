@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git@github.com:thanpolas/server2js.git"
   },
-  "main": "node/server2js.node",
+  "main": "lib/server2js.node",
   "engines": {
     "node": "~0.8"
   },
