@@ -12,6 +12,9 @@
     "url": "git@github.com:thanpolas/server2js.git"
   },
   "main": "lib/server2js.node",
+  "scripts": {
+    "test": "grunt test"
+  },
   "engines": {
     "node": "~0.8"
   },
