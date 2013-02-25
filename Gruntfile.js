@@ -4,21 +4,17 @@ module.exports = function(grunt)
 
   grunt.loadNpmTasks('grunt-closure-tools');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-contrib-nodeunit');
 
   //grunt.loadTasks('closure-tools/tasks');
   // Project configuration.
   grunt.initConfig({
     // closureBuilder not used on purpose.
     closureCompiler: {
-      target: {
-        closureCompiler: '../../closure-compiler/superstartup-compiler/build/sscompiler.jar',
-        js: [
-          'closure-library/closure/goog/base.js',
-          'src/server2js.export.js',
-          'src/server2.js'
-          ],
-        output_file: 'dist/server2.min.js',
-        options: {
+      options: {
+        compilerFile: '../../closure-compiler/superstartup-compiler/build/sscompiler.jar',
+        compilerOpts: {
           compilation_level: 'ADVANCED_OPTIMIZATIONS',
           warning_level: 'verbose',
           summary_detail_level: 3,
@@ -26,24 +22,45 @@ module.exports = function(grunt)
           output_wrapper: '"!function(){%output%}.call(this);"',
           externs: 'build/json.extern.js'
         }
+      },
+      target: {
+        src: [
+          'closure-library/closure/goog/base.js',
+          'src/server2js.export.js',
+          'src/server2.js'
+          ],
+        dest: 'dist/server2.min.js'
       }
     },
     closureDepsWriter: {
+      options: {
+        closureLibraryPath: 'closure-library'
+      },
        // any name that describes your operation
       targetName: {
-        closureLibraryPath: 'closure-library', // path to closure library
-        files: ['server2.js', 'build/server2js.export.js'],
-        output_file: 'build/deps.js'
+        src: ['server2.js', 'build/server2js.export.js'],
+        dest: 'build/deps.js'
       }
     },
-		qunit: {
-			all: ['http://localhost:8888/test/index.html?testNumber=2']
-		},
-    server: {
-      port: 8888,
-      base: '.'
+
+    /**
+     * TESTING
+     *
+     */
+    connect: {
+      test: {
+        options: {
+          port: 8888,
+          base: './',
+          keepalive: false
+        }
+      }
     },
-    nodeTest: {
+    qunit: {
+      all: ['http://localhost:8888/test/index.html?testNumber=2']
+    },
+
+    nodeunit: {
       all: ['test/node/**/*.js']
     },
     watch: {
@@ -55,22 +72,24 @@ module.exports = function(grunt)
         files: ['src/**/*.js', 'test/unit/**/*.js'],
         tasks: 'test:web'
       }
-
     }
   });
 
-
-  grunt.renameTask('test', 'nodeTest');
-
   grunt.registerTask('test', 'Test all or specific targets', function(target) {
     var nodeTest = [
-      'nodeTest:all'
+      'nodeunit:all'
     ];
 
     var webTest = [
       'server',
       'qunit:all'
     ];
+
+    // clear temp folder v0.4 way
+    //grunt.file.expand( ['temp/*'] )
+    //.forEach( grunt.file.delete );
+
+
 
     //return;
     switch( target ) {

@@ -3,9 +3,18 @@ exports.data = {
   booleanCase: {op: 'booleanCase', val: true},
   scriptTag: {op: 'scriptTag', val: '<script>eval("\'evil!\'");</script>'},
   objectCase: {op: 'objectCase', val: {name: 'Thanasis', username: 'thanpolas', isadork: true}},
-  oddCase: {op: 'oddCase', val: 'a single \' quote to mark " and "" and "" a back \\ run'}
-
+  oddCase: {op: 'oddCase', val: 'a single \' quote to mark " and "" and "" a back \\ run'},
+  user: {
+    op: 'udo',
+    val: {
+      user_id: '43710355087728826877',
+      first_name: 'than polas\'z',
+      country: 'US',
+      conversations: 0
+    }
+  }
 };
+
 
 exports.arrayLiteral = [
   {op: 'booleanCase', val: true},

@@ -18,12 +18,12 @@
   "engines": {
     "node": "~0.8"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
-    "grunt": "0.3.16",
-    "grunt-closure-tools": "0.6.12",
-    "grunt-contrib-watch": "0.1.4"
+    "grunt": "~0.4.0",
+    "grunt-closure-tools": "~0.7.3",
+    "grunt-contrib-watch": "~0.2.0",
+    "grunt-contrib-connect": "~0.1.2",
+    "grunt-contrib-nodeunit": "~0.1.2"
   }
-
 }
