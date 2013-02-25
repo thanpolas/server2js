@@ -391,7 +391,7 @@ awesome.controller.doMoreStuff = function(data)
 ```
 
 ## Release History
-- **v0.2.10**, *20 February 2013*
+- **v0.2.11**, *20 February 2013*
   - Added `get` method in the node API.
   - Several bug fixes on node API.
 
