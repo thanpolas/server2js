@@ -39,6 +39,13 @@ ss.STANDALONE = true;
  */
 ss.Server2js = function()
 {
+
+  /**
+   * @private
+   * @type {boolean} If original source was an array literal
+   */
+  this._srcArray = false;
+
   /**
    * @private
    * @type {boolean}
@@ -169,6 +176,15 @@ ss.server2js.isArray = function(value) {
   ss.server2js.unescapeEntities = function(str) {
     var seen = {'&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"'};
     var div = document.createElement('div');
+
+    if ('string' !== typeof str) {
+      return str;
+    }
+
+    if ( !str.replace ) {
+      return str;
+    }
+
     // Match as many valid entity characters as possible. If the actual entity
     // happens to be shorter, it will still work as innerHTML will return the
     // trailing characters unchanged. Since the entity characters do not include
@@ -265,15 +281,17 @@ ss.server2js.get = function()
 /**
  * Run this function synchronously on the html page
  *
- * @param {string} dataInput
+ * @param {string|Array} dataInput a JSON encoded string or an array.
  * @param {boolean=} optDispose Set to true if you want to automatically
  *   dispose the data objects after the parsing operation finishes.
- * @return {void}
+ * @return {boolean}
  */
 ss.Server2js.prototype.run = function(dataInput, optDispose)
 {
 
-  this._parseDataInput(dataInput);
+  if (!this._parseDataInput(dataInput)) {
+    return false;
+  }
 
   this._moreToCome = !!!optDispose;
 
@@ -290,6 +308,8 @@ ss.Server2js.prototype.run = function(dataInput, optDispose)
   if (!this._haveReadyHooks) {
     this._dispose();
   }
+
+  return true;
 };
 
 /**
@@ -298,16 +318,25 @@ ss.Server2js.prototype.run = function(dataInput, optDispose)
  *
  * @private
  * @param {string} dataInput
- * @return {void}
+ * @return {boolean}
  */
-ss.Server2js.prototype._parseDataInput = function(dataInput)
-{
-  /** @type {*} */
-  var input = JSON.parse(dataInput);
-
+ss.Server2js.prototype._parseDataInput = function(dataInput) {
+  /** @type {Array} */
+  var input;
+  if (ss.server2js.isArray( dataInput )) {
+    this._srcArray = true;
+    input = dataInput;
+  } else {
+    /** @preserveTry */
+    try {
+      input = JSON.parse(dataInput);
+    } catch(ex) {
+      return false;
+    }
+  }
   if (!ss.server2js.isArray(input)) {
     // not valid
-    return;
+    return false;
   }
 
   // loop through the operations and assign by key to our data object
@@ -340,23 +369,34 @@ ss.Server2js.prototype._parseDataInput = function(dataInput)
     }
   }
 
+  return true;
 };
-
+var items = [];
 /**
  * Parse a single operation's item.
- * @param  {Array} item The key/value pair of the operation.
+ * @param  {Object} rawItem The op/val pair of the operation.
  * @return {Array} The same array but with the value decoded.
  */
-ss.Server2js.prototype._parseInputItem = function(item) {
+ss.Server2js.prototype._parseInputItem = function(rawItem) {
 
-  var rawValue = item[ss.server2js.VALUE_KEY];
+  var item = {
+    op: rawItem[ss.server2js.OPERATION_KEY],
+    val: rawItem[ss.server2js.VALUE_KEY]
+  };
 
-  var unescapedJSON = ss.server2js.unescapeEntities(rawValue);
+  var value;
+  value = ss.server2js.unescapeEntities(item.val);
 
-  var value = JSON.parse(unescapedJSON);
+  /** @preserveTry */
+  try {
+    value = JSON.parse(value);
+  } catch(ex) {
+    items.push(rawItem);
+    item.val = null;
+    return item;
+  }
 
-  item[ss.server2js.VALUE_KEY] = value;
-
+  item.val = value;
   return item;
 };
 

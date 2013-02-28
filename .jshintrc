@@ -68,6 +68,8 @@
   "globalstrict": false,
   "strict": false,
 
+  "es5": true,
+
   /**
    * PROJECT GLOBALS
    * ================
@@ -83,7 +85,8 @@
     "ok",
     "getParams",
     "ss",
-    "goog"
+    "goog",
+    "fixtures"
 
   ]
 }

@@ -138,7 +138,6 @@ test('Execution Priority and Ready event', function() {
     equal(sequence, 1, 'Our execution sequence should be 1');
     ok(!ready, 'Ready should not be true');
     sequence++;
-    console.log('\n\nWRITE seq seq', sequence);
   }
 
   function paintWorld(data) {

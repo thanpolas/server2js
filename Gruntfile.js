@@ -1,3 +1,4 @@
+var path = require('path');
 
 module.exports = function(grunt)
 {
@@ -6,6 +7,15 @@ module.exports = function(grunt)
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
+  grunt.loadNpmTasks('grunt-contrib-livereload');
+  grunt.loadNpmTasks('grunt-contrib-qunit');
+  grunt.loadNpmTasks('grunt-regarde');
+
+  var lrSnippet = require('grunt-contrib-livereload/lib/utils').livereloadSnippet;
+
+  var folderMount = function folderMount(connect, point) {
+    return connect.static(path.resolve(point));
+  };
 
   //grunt.loadTasks('closure-tools/tasks');
   // Project configuration.
@@ -44,10 +54,42 @@ module.exports = function(grunt)
     },
 
     /**
+     * Live Reload
+     *
+     */
+   regarde: {
+      all: {
+        files: ['test/**/*.js', 'src/**/*.js', 'lib/**/*.js', './*.js'],
+        tasks: ['livereload', 'test:node']
+      }
+    },
+
+    //
+    // watch is not yet compatible with livereload
+    //
+    watch: {
+      test: {
+        options: {
+          nospawn: true
+        },
+        files: ['test/**/*.js', 'src/**/*.js', 'lib/**/*.js', './*.js'],
+        tasks: ['livereload', 'test:node']
+      }
+    },
+
+    /**
      * TESTING
      *
      */
     connect: {
+      livereload: {
+        options: {
+          port: 9001,
+          middleware: function(connect, options) {
+            return [lrSnippet, folderMount(connect, '.')];
+          }
+        }
+      },
       test: {
         options: {
           port: 8888,
@@ -57,21 +99,20 @@ module.exports = function(grunt)
       }
     },
     qunit: {
-      all: ['http://localhost:8888/test/index.html?testNumber=2']
+      source: {
+        options: {
+          urls: ['http://localhost:8888/test/']
+        }
+      },
+      compiled: {
+        options:{
+          urls: ['http://localhost:8888/test/index.html?compiled=true']
+        }
+      }
     },
 
     nodeunit: {
       all: ['test/node/**/*.js']
-    },
-    watch: {
-      test: {
-        files: ['lib/**/*.js', 'test/node/**/*.js'],
-        tasks: 'test'
-      },
-      web: {
-        files: ['src/**/*.js', 'test/unit/**/*.js'],
-        tasks: 'test:web'
-      }
     }
   });
 
@@ -81,15 +122,13 @@ module.exports = function(grunt)
     ];
 
     var webTest = [
-      'server',
-      'qunit:all'
+      'connect:test',
+      'qunit:source'
     ];
 
     // clear temp folder v0.4 way
-    //grunt.file.expand( ['temp/*'] )
-    //.forEach( grunt.file.delete );
-
-
+    grunt.file.expand( ['temp/*'] )
+      .forEach( grunt.file.delete );
 
     //return;
     switch( target ) {
@@ -112,4 +151,5 @@ module.exports = function(grunt)
 
   // Default task.
   grunt.registerTask('default', 'test');
+  grunt.registerTask('live', ['livereload-start', 'connect:livereload', 'regarde']);
 };
