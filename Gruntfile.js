@@ -56,7 +56,7 @@ module.exports = function(grunt)
           'closure-library/closure/goog/string/string.js',
           'test/libs/build.goog.string.js'
         ],
-        dest: 'test/libs/goog.string.js'
+        dest: 'test/libs/goog.stack.js'
       }
     },
     closureDepsWriter: {
