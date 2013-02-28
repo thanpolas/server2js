@@ -25,9 +25,22 @@ You can also read [a more detailed blog post](http://thanpol.as/javascript/passi
 * **Ready Option** Optionally you may trigger a hook on a `Ready` event that you define.
 * **GC OK!** When everything is done server2.js will delete all references to the data objects used. Happy Garbage Collection!
 
+
+## ☠☠☠ DOCS NOT UPDATED ☠☠☠
+
+THIS IS A WORKING VERSION BUT DOCS ARE NOT YET UPDATED.
+
+The transition of data between server and javascript has now been locked to
+a specific protocol that is currently only implelemted for node.
+
+Check out the [node implementation](lib/server2js.node.js) or study the tests.
+
+Soon the docs will also be updated.
+
+
 ## Quick start
 
-[Download the latest version (0.2.1)](https://github.com/thanpolas/server2js/raw/master/dist/server2.min.js).
+[Download the latest version (0.2.12)](https://github.com/thanpolas/server2js/raw/master/dist/server2.min.js).
 
 A server package has been implemented for nodeJS, install with npm:
 
@@ -391,6 +404,10 @@ awesome.controller.doMoreStuff = function(data)
 ```
 
 ## Release History
+
+- **v0.2.12**, *28 February 2013*
+  - Cleaned up bugs on the transport pipe.
+
 - **v0.2.11**, *20 February 2013*
   - Added `get` method in the node API.
   - Several bug fixes on node API.
