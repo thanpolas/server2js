@@ -1,4 +1,5 @@
-var path = require('path');
+var path = require('path'),
+    compiler = require( 'superstartup-closure-compiler' );
 
 module.exports = function(grunt)
 {
@@ -23,23 +24,39 @@ module.exports = function(grunt)
     // closureBuilder not used on purpose.
     closureCompiler: {
       options: {
-        compilerFile: '../../closure-compiler/superstartup-compiler/build/sscompiler.jar',
-        compilerOpts: {
-          compilation_level: 'ADVANCED_OPTIMIZATIONS',
-          warning_level: 'verbose',
-          summary_detail_level: 3,
-          define: ["'goog.DEBUG=false'", "'ss.STANDALONE=true'"],
-          output_wrapper: '"!function(){%output%}.call(this);"',
-          externs: 'build/json.extern.js'
-        }
+        compilerFile: compiler.getPathSS()
       },
-      target: {
+      server2js: {
+        options: {
+          compilerOpts: {
+            compilation_level: 'ADVANCED_OPTIMIZATIONS',
+            warning_level: 'verbose',
+            summary_detail_level: 3,
+            define: ["'goog.DEBUG=false'", "'ss.STANDALONE=true'"],
+            output_wrapper: '"!function(){%output%}.call(this);"',
+            externs: 'build/json.extern.js'
+          }
+        },
         src: [
           'closure-library/closure/goog/base.js',
           'src/server2js.export.js',
           'src/server2.js'
           ],
         dest: 'dist/server2.min.js'
+      },
+      testHelpers: {
+        options: {
+          compilerOpts: {
+            compilation_level: 'SIMPLE_OPTIMIZATIONS',
+            externs: 'test/libs/externs.goog.string.js'
+          }
+        },
+        src: [
+          'closure-library/closure/goog/base.js',
+          'closure-library/closure/goog/string/string.js',
+          'test/libs/build.goog.string.js'
+        ],
+        dest: 'test/libs/goog.string.js'
       }
     },
     closureDepsWriter: {
@@ -151,5 +168,6 @@ module.exports = function(grunt)
 
   // Default task.
   grunt.registerTask('default', 'test');
+  grunt.registerTask('build', 'closureCompiler:server2js');
   grunt.registerTask('live', ['livereload-start', 'connect:livereload', 'regarde']);
 };

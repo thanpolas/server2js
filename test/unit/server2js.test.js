@@ -1,4 +1,3 @@
-goog.require('goog.string');
 
 module('ss.server2js', {
   setup: function(){
@@ -89,7 +88,7 @@ test('Core functionality', function() {
 
   stop();
 
-  var s = ss.server;
+  var s = ss.server.Server2jsClass();
 
   function multiplier(data) {
     strictEqual(data, 10, 'numeric value hook');

@@ -27,6 +27,7 @@
     "grunt-contrib-nodeunit": "~0.1.2",
     "grunt-contrib-livereload": "~0.1.2",
     "grunt-regarde": "~0.1.1",
-    "grunt-contrib-qunit": "~0.1.1"
+    "grunt-contrib-qunit": "~0.1.1",
+    "superstartup-closure-compiler": "~0.1.4"
   }
 }

@@ -25,8 +25,6 @@
 goog.provide('ss.Server2js');
 goog.provide('ss.server2js');
 
-goog.require('goog.debug');
-
 /**
  * @define {boolean} we perform some hacks to reduce total size.
  */
@@ -379,24 +377,23 @@ var items = [];
  */
 ss.Server2js.prototype._parseInputItem = function(rawItem) {
 
-  var item = {
-    op: rawItem[ss.server2js.OPERATION_KEY],
-    val: rawItem[ss.server2js.VALUE_KEY]
-  };
+  var item = {};
+  item[ss.server2js.OPERATION_KEY] = rawItem[ss.server2js.OPERATION_KEY];
+  item[ss.server2js.VALUE_KEY] = rawItem[ss.server2js.VALUE_KEY];
 
   var value;
-  value = ss.server2js.unescapeEntities(item.val);
+  value = ss.server2js.unescapeEntities(item[ss.server2js.VALUE_KEY]);
 
   /** @preserveTry */
   try {
     value = JSON.parse(value);
   } catch(ex) {
     items.push(rawItem);
-    item.val = null;
+    item[ss.server2js.VALUE_KEY] = null;
     return item;
   }
 
-  item.val = value;
+  item[ss.server2js.VALUE_KEY] = value;
   return item;
 };
 
