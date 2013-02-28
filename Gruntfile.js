@@ -90,7 +90,7 @@ module.exports = function(grunt)
           nospawn: true
         },
         files: ['test/**/*.js', 'src/**/*.js', 'lib/**/*.js', './*.js'],
-        tasks: ['livereload', 'test:node']
+        tasks: ['test']
       }
     },
 
@@ -140,7 +140,8 @@ module.exports = function(grunt)
 
     var webTest = [
       'connect:test',
-      'qunit:source'
+      'qunit:source',
+      'qunit:compiled'
     ];
 
     // clear temp folder v0.4 way
@@ -156,11 +157,8 @@ module.exports = function(grunt)
         grunt.task.run(webTest);
       break;
       default:
-        // Not working on phantomJs (!) see:
-        // https://groups.google.com/forum/?fromgroups=#!topic/phantomjs/7wi5PXFWG78
-        //
-        // grunt.task.run(webTest);
         grunt.task.run(nodeTest);
+        grunt.task.run(webTest);
       break;
     }
 

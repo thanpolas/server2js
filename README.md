@@ -40,7 +40,7 @@ Soon the docs will also be updated.
 
 ## Quick start
 
-[Download the latest version (0.2.12)](https://github.com/thanpolas/server2js/raw/master/dist/server2.min.js).
+[Download the latest version (0.2.13)](https://github.com/thanpolas/server2js/raw/master/dist/server2.min.js).
 
 A server package has been implemented for nodeJS, install with npm:
 
@@ -405,7 +405,7 @@ awesome.controller.doMoreStuff = function(data)
 
 ## Release History
 
-- **v0.2.12**, *28 February 2013*
+- **v0.2.13**, *28 February 2013*
   - Cleaned up bugs on the transport pipe.
 
 - **v0.2.11**, *20 February 2013*

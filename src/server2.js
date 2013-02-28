@@ -561,9 +561,8 @@ ss.Server2js.prototype._runHooks = function(isSynch)
  * @param {ss.server2js.hookItem} b
  * @return {boolean}
  */
-ss.Server2js.prototype._sortFunc = function(a, b)
-{
-  return a.prio < b.prio;
+ss.Server2js.prototype._sortFunc = function(a, b) {
+  return b.prio - a.prio;
 };
 
 
